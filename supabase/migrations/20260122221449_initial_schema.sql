@@ -104,8 +104,6 @@ create table lawn_profiles (
   updated_at timestamptz not null default now(),
   
   -- ograniczenia
-  constraint lawn_profiles_unique_active_per_user unique (user_id, is_active) 
-    where is_active = true,
   constraint lawn_profiles_latitude_check check (latitude >= -90 and latitude <= 90),
   constraint lawn_profiles_longitude_check check (longitude >= -180 and longitude <= 180),
   constraint lawn_profiles_wielkość_m2_check check (wielkość_m2 > 0),
@@ -115,6 +113,9 @@ create table lawn_profiles (
     and length(nazwa) <= 255
   )
 );
+create unique index lawn_profiles_unique_active_per_user
+  on lawn_profiles (user_id)
+  where is_active = true;
 
 comment on table lawn_profiles is 'profile trawników powiązane z użytkownikami. jeden aktywny trawnik na użytkownika.';
 comment on column lawn_profiles.id is 'identyfikator profilu trawnika';
