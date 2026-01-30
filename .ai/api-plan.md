@@ -27,30 +27,30 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/lawn-profiles` | List current user's lawn profiles. |
+<!-- | GET | `/api/lawn-profiles` | List current user's lawn profiles. | -->
 | GET | `/api/lawn-profiles/active` | Get current user's active lawn profile (single). |
-| GET | `/api/lawn-profiles/:id` | Get one lawn profile by id (must belong to user). |
+<!-- | GET | `/api/lawn-profiles/:id` | Get one lawn profile by id (must belong to user). | -->
 | POST | `/api/lawn-profiles` | Create a lawn profile. |
-| PATCH | `/api/lawn-profiles/:id` | Update a lawn profile (including set as active). |
-| DELETE | `/api/lawn-profiles/:id` | Delete a lawn profile. |
+<!-- | PATCH | `/api/lawn-profiles/:id` | Update a lawn profile (including set as active). | -->
+<!-- | DELETE | `/api/lawn-profiles/:id` | Delete a lawn profile. | -->
 
-**GET /api/lawn-profiles**
+<!-- **GET /api/lawn-profiles**
 
 - **Query:** `?page=1&limit=20` (optional pagination).
 - **Response 200:**  
   `{ "data": LawnProfile[], "total": number }`  
   `LawnProfile`: id, user_id, nazwa, wielkość_m2, nasłonecznienie, rodzaj_powierzchni, latitude, longitude, is_active, created_at, updated_at.
-- **Errors:** 401 Unauthorized.
+- **Errors:** 401 Unauthorized. -->
 
 **GET /api/lawn-profiles/active**
 
 - **Response 200:** `{ "data": LawnProfile | null }`.
 - **Errors:** 401 Unauthorized.
 
-**GET /api/lawn-profiles/:id**
+<!-- **GET /api/lawn-profiles/:id**
 
 - **Response 200:** `{ "data": LawnProfile }`.
-- **Errors:** 401 Unauthorized, 403 Forbidden (not owner), 404 Not Found.
+- **Errors:** 401 Unauthorized, 403 Forbidden (not owner), 404 Not Found. -->
 
 **POST /api/lawn-profiles**
 
@@ -60,7 +60,7 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 - **Response 201:** `{ "data": LawnProfile }`.
 - **Errors:** 400 Validation error, 401 Unauthorized.
 
-**PATCH /api/lawn-profiles/:id**
+<!-- **PATCH /api/lawn-profiles/:id**
 
 - **Request body:** Partial of LawnProfile (only editable fields: nazwa, wielkość_m2, nasłonecznienie, rodzaj_powierzchni, latitude, longitude, is_active).
 - **Response 200:** `{ "data": LawnProfile }`.
@@ -69,11 +69,11 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 **DELETE /api/lawn-profiles/:id**
 
 - **Response 204:** No content.
-- **Errors:** 401 Unauthorized, 403 Forbidden, 404 Not Found.
+- **Errors:** 401 Unauthorized, 403 Forbidden, 404 Not Found. -->
 
 ---
 
-### 2.2. Treatment templates
+<!-- ### 2.2. Treatment templates
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -91,7 +91,7 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 **GET /api/treatment-templates/:id**
 
 - **Response 200:** `{ "data": TreatmentTemplate }`.
-- **Errors:** 401 Unauthorized, 404 Not Found.
+- **Errors:** 401 Unauthorized, 404 Not Found. -->
 
 ---
 
@@ -100,13 +100,13 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/lawn-profiles/:lawnProfileId/treatments` | List treatments for a lawn (with filters). |
-| GET | `/api/lawn-profiles/:lawnProfileId/treatments/upcoming` | Upcoming treatments (active, not expired, optional date range). |
-| GET | `/api/treatments/:id` | Get one treatment (must belong to user's lawn). |
-| POST | `/api/lawn-profiles/:lawnProfileId/treatments` | Create treatment (e.g. manual or from backend job; validate cooldown). |
-| PATCH | `/api/treatments/:id` | Update treatment (e.g. status, uzasadnienie_pogodowe). |
+<!-- | GET | `/api/lawn-profiles/:lawnProfileId/treatments/upcoming` | Upcoming treatments (active, not expired, optional date range). | -->
+<!-- | GET | `/api/treatments/:id` | Get one treatment (must belong to user's lawn). | -->
+<!-- | POST | `/api/lawn-profiles/:lawnProfileId/treatments` | Create treatment (e.g. manual or from backend job; validate cooldown). | -->
+<!-- | PATCH | `/api/treatments/:id` | Update treatment (e.g. status, uzasadnienie_pogodowe). | -->
 | PATCH | `/api/treatments/:id/complete` | Mark treatment as completed (business logic). |
-| PATCH | `/api/treatments/:id/reject` | Mark treatment as rejected (business logic). |
-| DELETE | `/api/treatments/:id` | Delete treatment (soft or hard per policy; MVP: allow delete only if appropriate). |
+<!-- | PATCH | `/api/treatments/:id/reject` | Mark treatment as rejected (business logic). | -->
+<!-- | DELETE | `/api/treatments/:id` | Delete treatment (soft or hard per policy; MVP: allow delete only if appropriate). | -->
 
 **GET /api/lawn-profiles/:lawnProfileId/treatments**
 
@@ -116,7 +116,7 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
   `Treatment`: id, lawn_profile_id, template_id, data_proponowana, typ_generowania, uzasadnienie_pogodowe, status, expires_at, created_at, updated_at; optionally embed `template` (template summary).
 - **Errors:** 401 Unauthorized, 403 Forbidden (lawn not owned), 404 Not Found.
 
-**GET /api/lawn-profiles/:lawnProfileId/treatments/upcoming**
+<!-- **GET /api/lawn-profiles/:lawnProfileId/treatments/upcoming**
 
 - **Query:** `?from=YYYY-MM-DD`, `?to=YYYY-MM-DD`, `?limit=30`. Default: from=today, limit=30.
 - **Response 200:**  
@@ -127,9 +127,9 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 **GET /api/treatments/:id**
 
 - **Response 200:** `{ "data": Treatment }` (optionally with template and lawn_profile summary).
-- **Errors:** 401, 403, 404.
+- **Errors:** 401, 403, 404. -->
 
-**POST /api/lawn-profiles/:lawnProfileId/treatments**
+<!-- **POST /api/lawn-profiles/:lawnProfileId/treatments**
 
 - **Request body:**  
   `{ "template_id": string, "data_proponowana": "YYYY-MM-DD", "typ_generowania": "statyczny"|"dynamiczny", "uzasadnienie_pogodowe"?: string, "expires_at"?: string (ISO) }`  
@@ -141,7 +141,7 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 
 - **Request body:** Partial of Treatment (e.g. uzasadnienie_pogodowe, status only if allowed by business rules; prefer dedicated complete/reject endpoints for status).
 - **Response 200:** `{ "data": Treatment }`.
-- **Errors:** 400, 401, 403, 404.
+- **Errors:** 400, 401, 403, 404. -->
 
 **PATCH /api/treatments/:id/complete**
 
@@ -149,7 +149,7 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 - **Response 200:** `{ "data": Treatment }`. Server sets status to `wykonany`, writes `treatment_history` (via trigger or explicit insert).
 - **Errors:** 400 (e.g. already completed), 401, 403, 404.
 
-**PATCH /api/treatments/:id/reject**
+<!-- **PATCH /api/treatments/:id/reject**
 
 - **Request body:** `{ "powód_odrzucenia": string }` (optional but recommended; max 500 chars).
 - **Response 200:** `{ "data": Treatment }`. Server sets status to `odrzucony`, writes `treatment_history`.
@@ -159,11 +159,11 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 
 - **Response 204.**  
   Use only when business rules allow (e.g. cancel a future recommendation). RLS ensures user can delete only own lawn's treatments.
-- **Errors:** 401, 403, 404.
+- **Errors:** 401, 403, 404. -->
 
 ---
 
-### 2.4. Treatment history
+<!-- ### 2.4. Treatment history
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -182,11 +182,11 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 
 - **Query:** `?page=1&limit=20`.
 - **Response 200:** `{ "data": TreatmentHistoryEntry[] }`.
-- **Errors:** 401, 403, 404.
+- **Errors:** 401, 403, 404. -->
 
 ---
 
-### 2.5. Weather
+<!-- ### 2.5. Weather
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -208,11 +208,11 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 - **Response 200:**  
   `{ "data": { "by_date": { "YYYY-MM-DD": { "temp_max", "opady" } }, "fetched_at": string } }`  
   Backend can aggregate from `weather_cache` or Open-Meteo and cache.
-- **Errors:** 400, 401, 429.
+- **Errors:** 400, 401, 429. -->
 
 ---
 
-### 2.6. Analytics
+<!-- ### 2.6. Analytics
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -224,11 +224,11 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
   `{ "event_type": EventType, "metadata"?: object, "treatment_id"?: string }`  
   EventType: task_completed | task_skipped | task_expired | weather_recommendation_created | survey_answer. For survey_answer, metadata may include rating 1–5.
 - **Response 202:** Accepted. `{ "data": { "id": string } }` or 204.
-- **Errors:** 400 Invalid event_type or payload, 401.
+- **Errors:** 400 Invalid event_type or payload, 401. -->
 
 ---
 
-### 2.7. Recommendations (business logic)
+<!-- ### 2.7. Recommendations (business logic)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -248,7 +248,7 @@ Base path: `/api` (e.g. `/api/lawn-profiles`). All endpoints require authenticat
 - **Request body:** none or `{}`.
 - **Response 202:** Accepted. `{ "data": { "message": "Refresh queued" } }`  
   Backend may run cooldown/weather logic and upsert treatments; or enqueue job. Rate limit (e.g. 1 per user per hour).
-- **Errors:** 401, 403, 404, 429 Too Many Requests.
+- **Errors:** 401, 403, 404, 429 Too Many Requests. -->
 
 ---
 
