@@ -58,3 +58,33 @@ export async function createLawnProfile(
 
   return data as LawnProfile;
 }
+
+/**
+ * Pobiera aktywny profil trawnika użytkownika (co najwyżej jeden: is_active = true).
+ * Używane przez GET /api/lawn-profiles/active.
+ *
+ * @param supabase – klient Supabase z context.locals
+ * @param userId – identyfikator użytkownika z sesji/JWT
+ * @returns LawnProfile gdy użytkownik ma aktywny profil, null w przeciwnym razie
+ * @throws błąd Supabase przy błędzie zapytania (np. połączenie, timeout) – endpoint zwróci 500
+ */
+export async function getActiveLawnProfile(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<LawnProfile | null> {
+  const { data, error } = await supabase
+    .from("lawn_profiles")
+    .select()
+    .eq("user_id", userId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error) {
+    // PGRST116 = brak wierszy dla .single(); .maybeSingle() przy 0 wierszach zwraca data: null, error: null
+    // Każdy inny błąd (połączenie, timeout, RLS itd.) – logujemy i przekazujemy do endpointu (500)
+    console.error("getActiveLawnProfile error:", error.code, error.message);
+    throw error;
+  }
+
+  return data as LawnProfile | null;
+}
