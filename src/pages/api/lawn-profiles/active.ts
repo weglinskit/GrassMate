@@ -1,10 +1,9 @@
 /**
  * Endpoint API: GET /api/lawn-profiles/active
- * Zwraca aktywny profil trawnika zalogowanego użytkownika (is_active = true) lub null.
- * Na tym etapie user_id jest zahardkodowany; moduł auth (JWT) zostanie wdrożony później.
+ * Zwraca aktywny profil trawnika użytkownika (is_active = true) lub null.
  *
- * Zgodność z regułami: tylko context.locals.supabase (bez importu klienta), typy z src/types.ts,
- * logika odczytu w serwisie; w logach nie umieszczamy JWT ani nagłówków Authorization.
+ * Tymczasowe obejście (bez JWT): używamy DEV_USER_ID – ten sam co w POST /api/lawn-profiles.
+ * Po wdrożeniu auth: pobierać userId z JWT (supabase.auth.getUser(jwt)).
  */
 
 import { getActiveLawnProfile } from "../../../lib/services/lawn-profiles.service";
@@ -12,10 +11,7 @@ import type { LawnProfile } from "../../../types";
 
 export const prerender = false;
 
-/**
- * Tymczasowo zahardkodowany user_id – spójnie z POST /api/lawn-profiles.
- * Po wdrożeniu JWT: pobierać user z supabase.auth.getUser(jwt).
- */
+/** Tymczasowe obejście – ten sam zahardkodowany user_id co w POST /api/lawn-profiles. */
 const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };

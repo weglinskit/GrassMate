@@ -1,10 +1,13 @@
 /**
  * Endpoint API: POST /api/lawn-profiles
  * Tworzy nowy profil trawnika dla użytkownika.
- * Na tym etapie user_id jest zahardkodowany; autentykacja JWT będzie dodana później.
  *
- * TODO (plan pkt 4): Pobierać token z Authorization: Bearer <token>, weryfikować przez
- * supabase.auth.getUser(jwt), przy braku użytkownika zwracać 401 { "error": "Unauthorized" }.
+ * Tymczasowe obejście (bez JWT): nie wymagamy nagłówka Authorization. Wszystkie nowe
+ * profile są przypisywane do DEV_USER_ID. Backend używa klucza SUPABASE_SERVICE_ROLE_KEY,
+ * więc RLS jest omijany i insert działa bez zalogowanego użytkownika.
+ *
+ * Po wdrożeniu auth: pobierać userId z JWT (Authorization: Bearer <token> →
+ * supabase.auth.getUser(jwt)), przy braku użytkownika zwracać 401.
  */
 
 import { createLawnProfile, UniqueActiveProfileError } from "../../lib/services/lawn-profiles.service";
@@ -14,8 +17,9 @@ import type { LawnProfile } from "../../types";
 export const prerender = false;
 
 /**
- * Tymczasowo zahardkodowany user_id – auth (JWT) będzie wdrożony później.
- * Użytkownik tworzony w migracji supabase/migrations/20260130120000_seed_dev_user.sql.
+ * Tymczasowe obejście – zahardkodowany user_id dopóki auth (JWT) nie jest wdrożony.
+ * Wszystkie tworzone lawn_profiles są powiązane z tym użytkownikiem.
+ * Użytkownik z seeda: supabase/migrations/20260130120000_seed_dev_user.sql.
  * Logowanie (gdy włączysz auth): dev@grassmate.local / dev-password
  */
 const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
