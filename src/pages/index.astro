@@ -1,8 +1,8 @@
 ---
-import Welcome from "../components/Welcome.astro";
-import Layout from "../layouts/Layout.astro";
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
+import { DashboardWithProviders } from "../components/dashboard/DashboardWithProviders";
 ---
 
-<Layout>
-  <Welcome />
-</Layout>
+<ProtectedLayout title="Dashboard – GrassMate">
+  <DashboardWithProviders client:load />
+</ProtectedLayout>

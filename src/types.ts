@@ -268,3 +268,28 @@ export type PaginationParams = {
   page?: number;
   limit?: number;
 };
+
+// =============================================================================
+// ViewModel / typy wspólne dla frontendu
+// =============================================================================
+
+/** Format błędu walidacji z API (tablica details). */
+export type ValidationErrorDetail = {
+  field: string;
+  message: string;
+};
+
+/** Wspólny kształt odpowiedzi błędu API. */
+export type ApiErrorResponse = {
+  error: string;
+  details?: ValidationErrorDetail[];
+  message?: string;
+};
+
+/** Stan widoku dashboardu. */
+export type DashboardState =
+  | "loading_profile"
+  | "no_profile"
+  | "loading_treatments"
+  | "treatments_loaded"
+  | "error";

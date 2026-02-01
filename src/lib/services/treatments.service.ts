@@ -149,3 +149,72 @@ export async function getTreatmentsForLawn(
 
   return { data, total };
 }
+
+/**
+ * Oznacza zabieg jako wykonany.
+ * Wymaga statusu "aktywny". Ustawia status na "wykonany".
+ * Trigger log_treatment_status_change zapisuje wpis do treatment_history
+ * (obecnie używa data_proponowana jako data_wykonania_rzeczywista).
+ *
+ * @param supabase – klient Supabase
+ * @param treatmentId – UUID zabiegu
+ * @param userId – UUID użytkownika (weryfikacja własności)
+ * @param dataWykonaniaRzeczywista – opcjonalna data wykonania (YYYY-MM-DD), domyślnie dziś
+ * @returns zaktualizowany Treatment
+ * @throws błąd gdy zabieg nie istnieje, nie należy do użytkownika lub status ≠ aktywny
+ */
+export async function completeTreatment(
+  supabase: SupabaseClient,
+  treatmentId: string,
+  userId: string,
+  dataWykonaniaRzeczywista?: string
+): Promise<Treatment> {
+  const { data: treatment, error: fetchError } = await supabase
+    .from("treatments")
+    .select("id, lawn_profile_id, status")
+    .eq("id", treatmentId)
+    .single();
+
+  if (fetchError || !treatment) {
+    const err = fetchError ?? new Error("Zabieg nie znaleziony");
+    console.error("completeTreatment fetch error:", err);
+    throw err;
+  }
+
+  const ownerId = await getLawnProfileOwnerId(supabase, treatment.lawn_profile_id);
+  if (!ownerId || ownerId !== userId) {
+    const err = new Error("Brak dostępu do zabiegu");
+    (err as Error & { status?: number }).status = 403;
+    throw err;
+  }
+
+  if (treatment.status !== "aktywny") {
+    const err = new Error(
+      "Zabieg został już oznaczony jako wykonany lub odrzucony"
+    );
+    (err as Error & { status?: number }).status = 400;
+    throw err;
+  }
+
+  const { data: updated, error: updateError } = await supabase
+    .from("treatments")
+    .update({
+      status: "wykonany" as const,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", treatmentId)
+    .select()
+    .single();
+
+  if (updateError) {
+    console.error("completeTreatment update error:", updateError);
+    throw updateError;
+  }
+
+  if (!updated) {
+    throw new Error("Aktualizacja zabiegu nie powiodła się");
+  }
+
+  void dataWykonaniaRzeczywista; // TODO: migracja triggera – użycie custom daty w treatment_history
+  return updated as Treatment;
+}
