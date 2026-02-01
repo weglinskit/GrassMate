@@ -1,24 +1,37 @@
-name: Release npm package
+# Minimalny CI: testy jednostkowe (Vitest) + build produkcyjny (Astro).
+# Uruchamiany przy push/PR na master oraz ręcznie (workflow_dispatch).
+# E2E (Playwright) wymaga Supabase – można dodać osobny job z secrets.
+name: Test & Build Master
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
 
 jobs:
-  release:
+  ci:
+    name: Lint, test, build
     runs-on: ubuntu-latest
-    environment: npm-release
-    permissions:
-      contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: "24.x"
-          registry-url: "https://registry.npmjs.org"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - run: npm ci
-      - run: npm run test
-      - run: npm run build
+          node-version-file: ".nvmrc"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Production build
+        run: npm run build
