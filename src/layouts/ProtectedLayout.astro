@@ -1,5 +1,6 @@
 ---
 import Layout from "./Layout.astro";
+import { UserMenu } from "../components/auth/UserMenu";
 
 interface Props {
   title?: string;
@@ -10,38 +11,57 @@ const currentPath = Astro.url.pathname;
 const isDashboard = currentPath === "/";
 const isProfil =
   currentPath === "/profil" || currentPath.startsWith("/profil/");
+
+const supabase = Astro.locals.supabase;
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+const isLoggedIn = Boolean(session);
 ---
 
-<Layout title={title}>
+<Layout title={title} renderUserBar={false}>
   <header
-    class="border-b border-border bg-background"
+    class="border-b border-border"
+    style="background: var(--header-bg);"
     role="banner"
     aria-label="Nawigacja główna"
   >
     <nav
-      class="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4"
+      class="mx-auto flex h-14 max-w-5xl items-center justify-between gap-6 px-4"
       aria-label="Menu nawigacji"
     >
-      <a
-        href="/"
-        class="text-sm font-medium transition-colors hover:text-foreground/80"
-        class:list={[
-          isDashboard ? "text-foreground font-semibold" : "text-muted-foreground",
-        ]}
-        aria-current={currentPath === "/" ? "page" : undefined}
-      >
-        Dashboard
-      </a>
-      <a
-        href="/profil"
-        class="text-sm font-medium transition-colors hover:text-foreground"
-        class:list={[
-          isProfil ? "text-foreground font-semibold" : "text-muted-foreground",
-        ]}
-        aria-current={isProfil ? "page" : undefined}
-      >
-        Profil
-      </a>
+      <div class="flex items-center gap-6">
+        <a
+          href="/"
+          class="text-sm font-semibold text-foreground transition-colors hover:text-foreground/80"
+          aria-label="GrassMate – strona główna"
+        >
+          GrassMate
+        </a>
+        <a
+          href="/"
+          class="text-sm font-medium transition-colors hover:text-foreground/80"
+          class:list={[
+            isDashboard ? "text-foreground font-semibold" : "text-muted-foreground",
+          ]}
+          aria-current={currentPath === "/" ? "page" : undefined}
+        >
+          Dashboard
+        </a>
+        <a
+          href="/profil"
+          class="text-sm font-medium transition-colors hover:text-foreground"
+          class:list={[
+            isProfil ? "text-foreground font-semibold" : "text-muted-foreground",
+          ]}
+          aria-current={isProfil ? "page" : undefined}
+        >
+          Profil
+        </a>
+      </div>
+      {isLoggedIn && (
+        <UserMenu isLoggedIn={isLoggedIn} client:load />
+      )}
     </nav>
   </header>
   <main class="mx-auto max-w-5xl px-4 py-6" role="main">

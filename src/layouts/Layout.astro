@@ -5,9 +5,11 @@ import { UserMenu } from "../components/auth/UserMenu";
 
 interface Props {
   title?: string;
+  /** Gdy false, nie renderuj górnego paska (używane przez ProtectedLayout). */
+  renderUserBar?: boolean;
 }
 
-const { title = "GrassMate" } = Astro.props;
+const { title = "GrassMate", renderUserBar = true } = Astro.props;
 
 const supabase = Astro.locals.supabase;
 const {
@@ -26,7 +28,7 @@ const isLoggedIn = Boolean(session);
     <title>{title}</title>
   </head>
   <body>
-    {isLoggedIn && (
+    {isLoggedIn && renderUserBar && (
       <header
         class="layout-user-bar"
         role="banner"
@@ -55,7 +57,7 @@ const isLoggedIn = Boolean(session);
 
   .layout-user-bar {
     border-bottom: 1px solid var(--border);
-    background: var(--background);
+    background: var(--header-bg);
   }
 
   .layout-user-bar__nav {
