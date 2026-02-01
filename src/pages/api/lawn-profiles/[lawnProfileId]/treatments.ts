@@ -7,6 +7,7 @@
 
 import { getUserIdFromRequest } from "../../../../lib/auth.server";
 import {
+  generateTreatmentsFromTemplates,
   getLawnProfileOwnerId,
   getTreatmentsForLawn,
   getUpcomingDateRange,
@@ -150,11 +151,30 @@ export async function GET({
   }
 
   try {
-    const { data, total } = await getTreatmentsForLawn(
+    let { data, total } = await getTreatmentsForLawn(
       supabase,
       lawnProfileId,
       query,
     );
+    if (total === 0 && Array.isArray(data) && data.length === 0) {
+      try {
+        await generateTreatmentsFromTemplates(supabase, lawnProfileId);
+        const result = await getTreatmentsForLawn(
+          supabase,
+          lawnProfileId,
+          query,
+        );
+        data = result.data;
+        total = result.total;
+      } catch (genErr) {
+        // eslint-disable-next-line no-console -- log errors for debugging
+        console.error(
+          "GET .../treatments: generateTreatmentsFromTemplates error:",
+          genErr,
+        );
+        // Zwracamy pustą listę – użytkownik i tak dostanie { data: [], total: 0 }
+      }
+    }
     return new Response(JSON.stringify({ data, total }), {
       status: 200,
       headers: JSON_HEADERS,

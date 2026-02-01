@@ -6,6 +6,9 @@
 /** Domyślna liczba dni okna „nadchodzących zabiegów” (od dziś włącznie). */
 export const UPCOMING_TREATMENTS_DEFAULT_DAYS = 10;
 
+/** Liczba dni do przodu, na którą generowane są zabiegi z szablonów (przy tworzeniu profilu / uzupełnianiu pustej listy). */
+export const GENERATE_TREATMENTS_WINDOW_DAYS = 60;
+
 /**
  * Zwraca przedział dat dla nadchodzących zabiegów w formacie YYYY-MM-DD (UTC).
  * from = dziś (północ UTC), to = dziś + windowDays dni (włącznie).
@@ -25,6 +28,145 @@ export function getUpcomingDateRange(windowDays: number): {
     from: fromDate.toISOString().slice(0, 10),
     to: toDate.toISOString().slice(0, 10),
   };
+}
+
+/** Okres wykonywania z szablonu: start/end w formacie MM-DD. */
+interface OkresWykonywania {
+  start: string;
+  end: string;
+}
+
+function isDateInPeriods(dateStr: string, periods: OkresWykonywania[]): boolean {
+  const mmdd = dateStr.slice(5, 10);
+  for (const p of periods) {
+    if (mmdd >= p.start && mmdd <= p.end) return true;
+  }
+  return false;
+}
+
+function parseOkresy(okresy: unknown): OkresWykonywania[] {
+  if (!Array.isArray(okresy)) return [];
+  return okresy.filter(
+    (x): x is OkresWykonywania =>
+      typeof x === "object" &&
+      x !== null &&
+      typeof (x as OkresWykonywania).start === "string" &&
+      typeof (x as OkresWykonywania).end === "string",
+  );
+}
+
+/**
+ * Generuje zabiegi (rekomendacje) dla profilu trawnika na podstawie szablonów treatment_templates.
+ * Dla każdego szablonu wstawia wiersze do treatments w oknie [from, to] z uwzględnieniem
+ * okresów wykonywania i minimalnego cooldownu. Nie duplikuje istniejących (template_id, data_proponowana).
+ *
+ * @param supabase – klient Supabase z context.locals
+ * @param lawnProfileId – UUID profilu trawnika
+ * @param options – opcjonalnie windowDays (domyślnie GENERATE_TREATMENTS_WINDOW_DAYS)
+ * @throws błąd Supabase przy błędzie zapytania
+ */
+export async function generateTreatmentsFromTemplates(
+  supabase: SupabaseClient,
+  lawnProfileId: string,
+  options?: { windowDays?: number },
+): Promise<void> {
+  const windowDays = options?.windowDays ?? GENERATE_TREATMENTS_WINDOW_DAYS;
+  const { from, to } = getUpcomingDateRange(windowDays);
+
+  const { data: templates, error: templatesError } = await supabase
+    .from("treatment_templates")
+    .select("id, minimalny_cooldown_dni, okresy_wykonywania");
+
+  if (templatesError) {
+    // eslint-disable-next-line no-console -- log errors for debugging
+    console.error(
+      "generateTreatmentsFromTemplates templates error:",
+      templatesError.code,
+      templatesError.message,
+    );
+    throw templatesError;
+  }
+
+  if (!templates?.length) return;
+
+  const { data: existing, error: existingError } = await supabase
+    .from("treatments")
+    .select("template_id, data_proponowana")
+    .eq("lawn_profile_id", lawnProfileId)
+    .gte("data_proponowana", from)
+    .lte("data_proponowana", to);
+
+  if (existingError) {
+    // eslint-disable-next-line no-console -- log errors for debugging
+    console.error(
+      "generateTreatmentsFromTemplates existing error:",
+      existingError.code,
+      existingError.message,
+    );
+    throw existingError;
+  }
+
+  const existingKeys = new Set(
+    (existing ?? []).map((r) => `${r.template_id}:${r.data_proponowana}`),
+  );
+
+  const fromDate = new Date(from + "T00:00:00Z");
+  const toDate = new Date(to + "T00:00:00Z");
+  const toTime = toDate.getTime();
+
+  const inserts: {
+    lawn_profile_id: string;
+    template_id: string;
+    data_proponowana: string;
+    typ_generowania: "statyczny";
+  }[] = [];
+
+  for (const template of templates) {
+    const cooldown = Math.max(0, template.minimalny_cooldown_dni ?? 0);
+    const periods = parseOkresy(template.okresy_wykonywania);
+    if (periods.length === 0) continue;
+
+    let lastScheduled: string | null = null;
+    for (let t = fromDate.getTime(); t <= toTime; t += 86400 * 1000) {
+      const d = new Date(t);
+      const dateStr = d.toISOString().slice(0, 10);
+      if (!isDateInPeriods(dateStr, periods)) continue;
+      if (
+        lastScheduled !== null &&
+        (d.getTime() - new Date(lastScheduled + "T00:00:00Z").getTime()) /
+          (86400 * 1000) <
+          cooldown
+      ) {
+        continue;
+      }
+      const key = `${template.id}:${dateStr}`;
+      if (existingKeys.has(key)) continue;
+      inserts.push({
+        lawn_profile_id: lawnProfileId,
+        template_id: template.id,
+        data_proponowana: dateStr,
+        typ_generowania: "statyczny",
+      });
+      existingKeys.add(key);
+      lastScheduled = dateStr;
+    }
+  }
+
+  if (inserts.length === 0) return;
+
+  const { error: insertError } = await supabase
+    .from("treatments")
+    .insert(inserts);
+
+  if (insertError) {
+    // eslint-disable-next-line no-console -- log errors for debugging
+    console.error(
+      "generateTreatmentsFromTemplates insert error:",
+      insertError.code,
+      insertError.message,
+    );
+    throw insertError;
+  }
 }
 
 import type { SupabaseClient } from "../../db/supabase.client";

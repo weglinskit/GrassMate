@@ -9,6 +9,7 @@ import {
   createLawnProfile,
   UniqueActiveProfileError,
 } from "../../lib/services/lawn-profiles.service";
+import { generateTreatmentsFromTemplates } from "../../lib/services/treatments.service";
 import { createLawnProfileSchema } from "../../lib/schemas/lawn-profiles.schema";
 import type { LawnProfile } from "../../types";
 
@@ -80,6 +81,16 @@ export async function POST({
       userId,
       parsed.data,
     );
+    try {
+      await generateTreatmentsFromTemplates(supabase, lawnProfile.id);
+    } catch (genErr) {
+      // eslint-disable-next-line no-console -- log errors for debugging
+      console.error(
+        "POST /api/lawn-profiles: generateTreatmentsFromTemplates error:",
+        genErr,
+      );
+      // Nie przerywamy – profil został utworzony; zabiegi można wygenerować później przy GET treatments
+    }
     return new Response(JSON.stringify({ data: lawnProfile }), {
       status: 201,
       headers: JSON_HEADERS,
