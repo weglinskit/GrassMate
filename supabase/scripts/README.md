@@ -2,7 +2,9 @@
 
 ## Użytkownik deweloperski (dev@grassmate.local)
 
-Jeśli logowanie z użytkownikiem wstawionym w migracji zwraca „Database error querying schema”, możesz utworzyć użytkownika przez Auth Admin API – wtedy GoTrue sam uzupełni wszystkie kolumny w `auth.users`.
+Użytkownik dev jest wstawiany **tylko lokalnie** przez `supabase/seed.sql` przy `supabase db reset`. Na Cloud nie uruchamia się seed (tylko migracje przy `db push`), więc dev user tam nie trafia.
+
+Jeśli logowanie z użytkownikiem wstawionym w seedzie zwraca „Database error querying schema”, możesz utworzyć użytkownika przez Auth Admin API – wtedy GoTrue sam uzupełni wszystkie kolumny w `auth.users`.
 
 ### 1. Pobierz klucz service_role
 
