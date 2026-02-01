@@ -3,11 +3,12 @@ import { DashboardPage } from "./pages/DashboardPage";
 
 /**
  * Dane użytkownika z seed (supabase/seed.sql).
- * W CI uruchomić `supabase db reset` lub wstrzyknąć użytkownika przed testami.
+ * W CI: E2E_SEED_USER_EMAIL i E2E_SEED_USER_PASSWORD z sekretów GHA.
+ * Lokalnie: domyślnie dev@grassmate.local / dev-password.
  */
 const SEED_USER = {
-  email: "dev@grassmate.local",
-  password: "dev-password",
+  email: process.env.E2E_SEED_USER_EMAIL ?? "dev@grassmate.local",
+  password: process.env.E2E_SEED_USER_PASSWORD ?? "dev-password",
 };
 
 test.describe("Formularz tworzenia lawn profile", () => {
