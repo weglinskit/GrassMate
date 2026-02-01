@@ -1,0 +1,20 @@
+# Composite action: checkout, setup Node z .nvmrc, npm ci.
+# Używane przez workflowy CI (pull-request, build itp.).
+name: Setup project
+description: Checkout repo, setup Node from .nvmrc, install dependencies with npm ci
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Setup Node
+      uses: actions/setup-node@v6
+      with:
+        node-version-file: ".nvmrc"
+        cache: "npm"
+
+    - name: Install dependencies
+      run: npm ci
+      shell: bash

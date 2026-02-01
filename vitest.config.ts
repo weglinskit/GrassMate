@@ -10,6 +10,11 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html", "lcov"],
+      outputDir: "coverage",
+    },
   },
   resolve: {
     alias: {
