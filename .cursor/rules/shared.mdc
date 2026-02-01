@@ -31,8 +31,10 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/components` - Client-side components written in Astro (static) and React (dynamic)
 - `./src/components/ui` - Client-side components from Shadcn/ui
 - `./src/lib` - Services and helpers 
+- `./src/test` - Vitest setup (setup.ts) and shared test utilities
 - `./src/assets` - static internal assets
 - `./public` - public assets
+- `./e2e` - Playwright E2E tests and Page Object Model (e2e/pages/)
 
 When modifying the directory structure, always update this section.
 
