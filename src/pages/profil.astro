@@ -1,0 +1,8 @@
+---
+import ProtectedLayout from "../layouts/ProtectedLayout.astro";
+import { ProfileWithProviders } from "../components/profile/ProfileWithProviders";
+---
+
+<ProtectedLayout title="Profil – GrassMate">
+  <ProfileWithProviders client:load />
+</ProtectedLayout>

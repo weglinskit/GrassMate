@@ -293,3 +293,16 @@ export type DashboardState =
   | "loading_treatments"
   | "treatments_loaded"
   | "error";
+
+/**
+ * Stan widoku profilu trawnika.
+ * - loading: trwa pobieranie GET active;
+ * - no_profile: odpowiedź 200 z data: null;
+ * - loaded: odpowiedź 200 z data: LawnProfile;
+ * - error: błąd zapytania (np. 500, błąd sieci).
+ */
+export type ProfileViewState =
+  | "loading"
+  | "no_profile"
+  | "loaded"
+  | "error";
