@@ -163,5 +163,29 @@ describe("treatments.schema", () => {
         expect(result.data.limit).toBe(50);
       }
     });
+
+    it("akceptuje upcoming=1 i ustawia true", () => {
+      const result = getTreatmentsQuerySchema.safeParse({ upcoming: "1" });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.upcoming).toBe(true);
+      }
+    });
+
+    it("akceptuje upcoming=true i ustawia true", () => {
+      const result = getTreatmentsQuerySchema.safeParse({ upcoming: "true" });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.upcoming).toBe(true);
+      }
+    });
+
+    it("domyślnie upcoming=false gdy brak parametru", () => {
+      const result = getTreatmentsQuerySchema.safeParse({});
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.upcoming).toBe(false);
+      }
+    });
   });
 });

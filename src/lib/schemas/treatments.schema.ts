@@ -58,6 +58,8 @@ export const getTreatmentsQuerySchema = z
       .optional()
       .default("data_proponowana"),
     embed: z.enum(["template"]).optional(),
+    /** Gdy true: nadpisuje from/to oknem 10 dni od dziś, wymusza status=aktywny i embed=template (alias „nadchodzące zabiegi”). */
+    upcoming: z.coerce.boolean().optional().default(false),
   })
   .refine(
     (data) => {

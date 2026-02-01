@@ -20,7 +20,7 @@ GrassMate is a web application designed to simplify lawn care decision-making fo
 
 - **Annual Schedule**: Year-round simplified maintenance schedule with seasonal recommendations
 - **Weather-Aware Recommendations**: Dynamic suggestions based on current and forecasted weather conditions using Open-Meteo data
-- **Task Management**: Track upcoming treatments, mark completed tasks, and maintain a history of all lawn care activities
+- **Task Management**: Track upcoming treatments (active treatments with proposed date in the next 10 days, shown on the dashboard; mark as completed via CompleteTreatmentDrawer), and maintain a history of all lawn care activities
 - **User Profiles**: Customizable lawn profiles with settings for sun exposure, lawn size, and surface type
 - **Web Push Notifications**: Browser-based notifications for scheduled treatments and weather-based recommendations
 - **User Authentication**: Secure email/password authentication with user data stored in Supabase

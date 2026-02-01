@@ -2,6 +2,8 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getAccessToken } from "@/lib/auth.browser";
+import { UPCOMING_TREATMENTS_DAYS } from "@/lib/constants";
+import { getUpcomingDateRange } from "@/lib/utils";
 import { DashboardLoader } from "./DashboardLoader";
 import { ProfileCreateForm } from "./ProfileCreateForm";
 import { TreatmentsList } from "./TreatmentsList";
@@ -23,12 +25,16 @@ async function fetchActiveProfile(): Promise<LawnProfile | null> {
 
 async function fetchTreatments(
   lawnProfileId: string,
+  from: string,
+  to: string,
 ): Promise<Treatment[] | TreatmentWithEmbedded[]> {
   const token = await getAccessToken();
   const params = new URLSearchParams({
     status: "aktywny",
+    from,
+    to,
     page: "1",
-    limit: "20",
+    limit: "100",
     embed: "template",
   });
   const res = await fetch(
@@ -99,11 +105,13 @@ export function PageDashboard() {
     | { status?: number; message?: string }
     | undefined;
 
+  const { from, to } = getUpcomingDateRange(UPCOMING_TREATMENTS_DAYS);
+
   const treatmentsQuery = useQuery({
-    queryKey: ["lawn-profiles", profile?.id, "treatments"],
+    queryKey: ["lawn-profiles", profile?.id, "treatments", from, to],
     queryFn: () => {
       if (!profile?.id) throw new Error("No profile");
-      return fetchTreatments(profile.id);
+      return fetchTreatments(profile.id, from, to);
     },
     enabled: Boolean(profile?.id),
     retry: false,

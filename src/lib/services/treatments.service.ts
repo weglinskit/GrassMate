@@ -3,6 +3,30 @@
  * Logika biznesowa dla endpointów API: weryfikacja dostępu do profilu, listowanie zabiegów z filtrami i paginacją.
  */
 
+/** Domyślna liczba dni okna „nadchodzących zabiegów” (od dziś włącznie). */
+export const UPCOMING_TREATMENTS_DEFAULT_DAYS = 10;
+
+/**
+ * Zwraca przedział dat dla nadchodzących zabiegów w formacie YYYY-MM-DD (UTC).
+ * from = dziś (północ UTC), to = dziś + windowDays dni (włącznie).
+ *
+ * @param windowDays – liczba dni okna (np. 10 → od dziś do dziś+10 włącznie)
+ * @returns { from, to } – daty w ISO YYYY-MM-DD
+ */
+export function getUpcomingDateRange(windowDays: number): {
+  from: string;
+  to: string;
+} {
+  const fromDate = new Date();
+  fromDate.setUTCHours(0, 0, 0, 0);
+  const toDate = new Date(fromDate);
+  toDate.setUTCDate(toDate.getUTCDate() + windowDays);
+  return {
+    from: fromDate.toISOString().slice(0, 10),
+    to: toDate.toISOString().slice(0, 10),
+  };
+}
+
 import type { SupabaseClient } from "../../db/supabase.client";
 import type {
   Treatment,
@@ -56,6 +80,7 @@ function mapRowWithTemplate(
 /**
  * Pobiera listę zabiegów dla danego profilu trawnika z filtrami, paginacją i opcjonalnym embed szablonu.
  * Używane przez GET /api/lawn-profiles/:lawnProfileId/treatments.
+ * Zakres dat: query.from / query.to (data_proponowana). Nadchodzące zabiegi: getUpcomingTreatments lub query z from, to, status=aktywny, embed=template.
  *
  * @param supabase – klient Supabase z context.locals
  * @param lawnProfileId – UUID profilu trawnika
@@ -141,14 +166,47 @@ export async function getTreatmentsForLawn(
     embed === "template" && Array.isArray(rows)
       ? rows.map((row) =>
           mapRowWithTemplate(
-            row as Treatment & {
+            row as unknown as Treatment & {
               treatment_templates?: TreatmentTemplateSummary | null;
             },
           ),
         )
-      : ((rows ?? []) as Treatment[]);
+      : ((rows ?? []) as unknown as Treatment[]);
 
   return { data, total };
+}
+
+/**
+ * Pobiera nadchodzące zabiegi (status=aktywny, data_proponowana w przedziale [dziś, dziś + windowDays] włącznie, UTC)
+ * z osadzonym szablonem (embed=template). Używane przez dashboard i GET treatments z parametrem upcoming=1.
+ *
+ * @param supabase – klient Supabase z context.locals
+ * @param lawnProfileId – UUID profilu trawnika
+ * @param windowDays – liczba dni okna (domyślnie UPCOMING_TREATMENTS_DEFAULT_DAYS)
+ * @returns { data, total } – tablica TreatmentWithEmbedded oraz łączna liczba pasujących wierszy
+ * @throws błąd Supabase przy błędzie zapytania – endpoint zwróci 500
+ */
+export async function getUpcomingTreatments(
+  supabase: SupabaseClient,
+  lawnProfileId: string,
+  windowDays: number = UPCOMING_TREATMENTS_DEFAULT_DAYS,
+): Promise<{ data: TreatmentWithEmbedded[]; total: number }> {
+  const { from, to } = getUpcomingDateRange(windowDays);
+  const query: GetTreatmentsQuerySchema = {
+    status: "aktywny",
+    from,
+    to,
+    embed: "template",
+    page: 1,
+    limit: 100,
+    sort: "data_proponowana",
+    upcoming: false,
+  };
+  const result = await getTreatmentsForLawn(supabase, lawnProfileId, query);
+  return {
+    data: result.data as unknown as TreatmentWithEmbedded[],
+    total: result.total,
+  };
 }
 
 /**

@@ -9,6 +9,8 @@ import { getUserIdFromRequest } from "../../../../lib/auth.server";
 import {
   getLawnProfileOwnerId,
   getTreatmentsForLawn,
+  getUpcomingDateRange,
+  UPCOMING_TREATMENTS_DEFAULT_DAYS,
 } from "../../../../lib/services/treatments.service";
 import { getTreatmentsQuerySchema } from "../../../../lib/schemas/treatments.schema";
 import { z } from "zod";
@@ -35,6 +37,12 @@ function queryParamsFromRequest(request: Request): Record<string, string> {
 /**
  * GET – pobranie listy zabiegów dla profilu trawnika.
  * Waliduje lawnProfileId (path), query params (Zod), weryfikuje dostęp (404/403), zwraca 200 z { data, total }.
+ *
+ * Odpowiedź 200 (application/json):
+ * - data: tablica zabiegów (Treatment lub TreatmentWithEmbedded przy embed=template)
+ * - total: łączna liczba pasujących wierszy
+ * Element z embed=template zawiera pole template: { id, nazwa, typ_zabiegu, minimalny_cooldown_dni }.
+ * Pola zabiegu: id, lawn_profile_id, template_id, data_proponowana, typ_generowania, uzasadnienie_pogodowe, status, expires_at, created_at, updated_at.
  */
 export async function GET({
   params,
@@ -125,11 +133,27 @@ export async function GET({
     );
   }
 
+  let query = queryResult.data;
+  if (query.upcoming) {
+    const { from, to } = getUpcomingDateRange(UPCOMING_TREATMENTS_DEFAULT_DAYS);
+    query = {
+      ...query,
+      from,
+      to,
+      status: "aktywny",
+      embed: "template",
+      page: 1,
+      limit: 100,
+      sort: "data_proponowana",
+      upcoming: false,
+    };
+  }
+
   try {
     const { data, total } = await getTreatmentsForLawn(
       supabase,
       lawnProfileId,
-      queryResult.data,
+      query,
     );
     return new Response(JSON.stringify({ data, total }), {
       status: 200,
