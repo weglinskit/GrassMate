@@ -48,6 +48,14 @@ GrassMate is a web application designed to simplify lawn care decision-making fo
 - **[Open-Meteo](https://open-meteo.com/)** - Free weather API for historical and forecasted weather data
 - **[OpenRouter.ai](https://openrouter.ai/)** - AI model gateway for accessing various AI models (OpenAI, Anthropic, Google, etc.)
 
+### Testing
+
+- **Unit tests:** **[Vitest](https://vitest.dev/)** — test runner z integracją Vite/Astro, ESM i trybem watch; mocki przez `vi.fn()` / `vi.mocked()` (np. Supabase). Schematy Zod i funkcje czyste (auth, serwisy) testowane bez dodatkowych bibliotek.
+- **React components:** **[React Testing Library](https://testing-library.com/react)** + **@testing-library/user-event** — testy formularzy i komponentów (Login, Register, CompleteTreatmentDrawer, ProfileCreate/Edit) z mockami `supabaseBrowser` i `fetch`; środowisko **jsdom** (lub happy-dom).
+- **E2E tests:** **[Playwright](https://playwright.dev/)** — testy end-to-end w przeglądarce (Chromium, Firefox, WebKit); scenariusze: logowanie → dashboard → utworzenie profilu → lista zabiegów → oznaczenie zabiegu jako wykonany. Konfiguracja: `playwright.config.ts`, katalog `e2e/` z plikami `*.spec.ts`.
+
+Szczegóły strategii i zakresu: [`.ai/test-plan.md`](.ai/test-plan.md).
+
 ### DevOps & Hosting
 
 - **[GitHub Actions](https://github.com/features/actions)** - CI/CD pipelines
@@ -128,6 +136,11 @@ npm run preview
 | `npm run lint` | Run ESLint to check for code quality issues |
 | `npm run lint:fix` | Automatically fix ESLint issues where possible |
 | `npm run format` | Format code using Prettier |
+| `npm run test` | Run Vitest in watch mode (unit + integration) |
+| `npm run test:run` | Run Vitest once (for CI) |
+| `npm run test:unit` | Run only unit tests |
+| `npm run test:integration` | Run only API integration tests |
+| `npm run test:e2e` | Run Playwright E2E tests |
 
 ## Project Scope
 

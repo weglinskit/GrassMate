@@ -15,6 +15,11 @@ AI - Komunikacja z modelami przez usługę Openrouter.ai:
 - Dostęp do szerokiej gamy modeli (OpenAI, Anthropic, Google i wiele innych), które pozwolą nam znaleźć rozwiązanie zapewniające wysoką efektywność i niskie koszta
 - Pozwala na ustawianie limitów finansowych na klucze API
 
+Testowanie:
+- Testy jednostkowe: Vitest (runner z integracją Vite/Astro, ESM, watch); mocki przez vi.fn() / vi.mocked() (Supabase). Testowane: funkcje czyste (auth.errors, auth.server), schematy Zod (safeParse), serwisy z mockowanym SupabaseClient.
+- Testy komponentów React: React Testing Library, @testing-library/user-event; środowisko jsdom (lub happy-dom). Mocki: @/db/supabase.browser, getAccessToken, fetch.
+- Testy E2E: Playwright (jeden runner dla Chromium/Firefox/WebKit); serwer Astro (preview/dev) + lokalny lub testowy Supabase. Scenariusze: logowanie → dashboard → utworzenie profilu → lista zabiegów → complete. Konfiguracja: playwright.config.ts, katalog e2e/ z plikami *.spec.ts.
+
 CI/CD i Hosting:
 - Github Actions do tworzenia pipeline’ów CI/CD
 - DigitalOcean do hostowania aplikacji za pośrednictwem obrazu docker
