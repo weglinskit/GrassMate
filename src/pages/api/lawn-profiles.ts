@@ -91,6 +91,7 @@ export async function POST({
         headers: JSON_HEADERS,
       });
     }
+    // eslint-disable-next-line no-console -- log API errors for debugging
     console.error("POST /api/lawn-profiles error:", e);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,

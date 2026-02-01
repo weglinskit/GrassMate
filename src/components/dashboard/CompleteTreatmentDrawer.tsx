@@ -94,6 +94,7 @@ export function CompleteTreatmentDrawer({
         onOpenChange(false);
         onSuccess?.();
       } catch (err) {
+        // eslint-disable-next-line no-console -- log submit errors in dev
         console.error("CompleteTreatmentDrawer submit error:", err);
         const message = "Błąd sieci. Sprawdź połączenie i spróbuj ponownie.";
         setDateError(message);

@@ -24,7 +24,10 @@ const dateStringRegex = /^\d{4}-\d{2}-\d{2}$/;
 export const getTreatmentsQuerySchema = z
   .object({
     status: statusZabieguEnum.optional(),
-    template_id: z.string().uuid("Nieprawidłowy format UUID template_id").optional(),
+    template_id: z
+      .string()
+      .uuid("Nieprawidłowy format UUID template_id")
+      .optional(),
     from: z
       .string()
       .regex(dateStringRegex, "Data from musi być w formacie YYYY-MM-DD")
@@ -33,7 +36,12 @@ export const getTreatmentsQuerySchema = z
       .string()
       .regex(dateStringRegex, "Data to musi być w formacie YYYY-MM-DD")
       .optional(),
-    page: z.coerce.number().int().min(1, "Strona musi być >= 1").optional().default(1),
+    page: z.coerce
+      .number()
+      .int()
+      .min(1, "Strona musi być >= 1")
+      .optional()
+      .default(1),
     limit: z.coerce
       .number()
       .int()
@@ -42,7 +50,11 @@ export const getTreatmentsQuerySchema = z
       .optional()
       .default(20),
     sort: z
-      .enum(["data_proponowana", "data_proponowana_asc", "data_proponowana_desc"])
+      .enum([
+        "data_proponowana",
+        "data_proponowana_asc",
+        "data_proponowana_desc",
+      ])
       .optional()
       .default("data_proponowana"),
     embed: z.enum(["template"]).optional(),
@@ -54,7 +66,10 @@ export const getTreatmentsQuerySchema = z
       }
       return true;
     },
-    { message: "Data from musi być wcześniejsza lub równa dacie to", path: ["from"] }
+    {
+      message: "Data from musi być wcześniejsza lub równa dacie to",
+      path: ["from"],
+    },
   );
 
 /** Typ wywnioskowany ze schematu query – używany w serwisie i endpoincie. */

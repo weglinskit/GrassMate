@@ -49,7 +49,7 @@ export class LawnProfileForbiddenError extends Error {
 export async function createLawnProfile(
   supabase: SupabaseClient,
   userId: string,
-  body: CreateLawnProfileSchema
+  body: CreateLawnProfileSchema,
 ): Promise<LawnProfile> {
   const payload = {
     user_id: userId,
@@ -89,7 +89,7 @@ export async function createLawnProfile(
  */
 export async function getActiveLawnProfile(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
 ): Promise<LawnProfile | null> {
   const { data, error } = await supabase
     .from("lawn_profiles")
@@ -101,6 +101,7 @@ export async function getActiveLawnProfile(
   if (error) {
     // PGRST116 = brak wierszy dla .single(); .maybeSingle() przy 0 wierszach zwraca data: null, error: null
     // Każdy inny błąd (połączenie, timeout, RLS itd.) – logujemy i przekazujemy do endpointu (500)
+    // eslint-disable-next-line no-console -- log errors for debugging
     console.error("getActiveLawnProfile error:", error.code, error.message);
     throw error;
   }
@@ -118,7 +119,7 @@ export async function getActiveLawnProfile(
  */
 export async function getLawnProfileById(
   supabase: SupabaseClient,
-  lawnProfileId: string
+  lawnProfileId: string,
 ): Promise<LawnProfile | null> {
   const { data, error } = await supabase
     .from("lawn_profiles")
@@ -127,6 +128,7 @@ export async function getLawnProfileById(
     .maybeSingle();
 
   if (error) {
+    // eslint-disable-next-line no-console -- log errors for debugging
     console.error("getLawnProfileById error:", error.code, error.message);
     throw error;
   }
@@ -149,7 +151,7 @@ export async function updateLawnProfile(
   supabase: SupabaseClient,
   userId: string,
   lawnProfileId: string,
-  body: UpdateLawnProfileSchema
+  body: UpdateLawnProfileSchema,
 ): Promise<LawnProfile> {
   const existing = await getLawnProfileById(supabase, lawnProfileId);
   if (!existing) {

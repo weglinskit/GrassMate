@@ -22,7 +22,9 @@ function formatDate(isoDate: string): string {
   }
 }
 
-function getTreatmentName(treatment: Treatment | TreatmentWithEmbedded): string {
+function getTreatmentName(
+  treatment: Treatment | TreatmentWithEmbedded,
+): string {
   const withEmbedded = treatment as TreatmentWithEmbedded;
   return withEmbedded.template?.nazwa ?? "Zabieg";
 }
@@ -32,7 +34,10 @@ interface TreatmentCardProps {
   onMarkComplete?: (treatment: Treatment) => void;
 }
 
-export function TreatmentCard({ treatment, onMarkComplete }: TreatmentCardProps) {
+export function TreatmentCard({
+  treatment,
+  onMarkComplete,
+}: TreatmentCardProps) {
   const handleClick = useCallback(() => {
     onMarkComplete?.(treatment);
   }, [treatment, onMarkComplete]);

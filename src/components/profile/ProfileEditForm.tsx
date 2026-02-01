@@ -89,11 +89,11 @@ export function ProfileEditForm({
             : rodzajPowierzchni.trim(),
       };
 
-      Object.keys(payload).forEach((k) => {
-        if (payload[k] === undefined) delete payload[k];
-      });
+      const payloadWithoutUndefined = Object.fromEntries(
+        Object.entries(payload).filter(([, v]) => v !== undefined),
+      );
 
-      const result = updateLawnProfileSchema.safeParse(payload);
+      const result = updateLawnProfileSchema.safeParse(payloadWithoutUndefined);
 
       if (!result.success) {
         const errors: Record<string, string> = {};
@@ -159,6 +159,7 @@ export function ProfileEditForm({
           onSuccess?.(json.data as LawnProfile);
         }
       } catch (err) {
+        // eslint-disable-next-line no-console -- log submit errors in dev
         console.error("ProfileEditForm submit error:", err);
         setFieldErrors({
           _form: "Błąd sieci. Sprawdź połączenie i spróbuj ponownie.",

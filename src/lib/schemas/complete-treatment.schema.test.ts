@@ -32,7 +32,9 @@ describe("complete-treatment.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Data musi być w formacie YYYY-MM-DD");
+        expect(result.error.issues[0].message).toBe(
+          "Data musi być w formacie YYYY-MM-DD",
+        );
       }
     });
 
@@ -42,7 +44,9 @@ describe("complete-treatment.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Data musi być w formacie YYYY-MM-DD");
+        expect(result.error.issues[0].message).toBe(
+          "Data musi być w formacie YYYY-MM-DD",
+        );
       }
     });
 

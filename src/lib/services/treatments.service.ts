@@ -22,7 +22,7 @@ import type { GetTreatmentsQuerySchema } from "../schemas/treatments.schema";
  */
 export async function getLawnProfileOwnerId(
   supabase: SupabaseClient,
-  lawnProfileId: string
+  lawnProfileId: string,
 ): Promise<string | null> {
   const { data, error } = await supabase
     .from("lawn_profiles")
@@ -31,6 +31,7 @@ export async function getLawnProfileOwnerId(
     .maybeSingle();
 
   if (error) {
+    // eslint-disable-next-line no-console -- log errors for debugging
     console.error("getLawnProfileOwnerId error:", error.code, error.message);
     throw error;
   }
@@ -43,7 +44,7 @@ export async function getLawnProfileOwnerId(
  * Supabase zwraca relację pod kluczem nazwy tabeli – mapujemy na "template" zgodnie z API.
  */
 function mapRowWithTemplate(
-  row: Treatment & { treatment_templates?: TreatmentTemplateSummary | null }
+  row: Treatment & { treatment_templates?: TreatmentTemplateSummary | null },
 ): TreatmentWithEmbedded {
   const { treatment_templates, ...treatment } = row;
   return {
@@ -65,10 +66,8 @@ function mapRowWithTemplate(
 export async function getTreatmentsForLawn(
   supabase: SupabaseClient,
   lawnProfileId: string,
-  query: GetTreatmentsQuerySchema
-): Promise<
-  { data: Treatment[] | TreatmentWithEmbedded[]; total: number }
-> {
+  query: GetTreatmentsQuerySchema,
+): Promise<{ data: Treatment[] | TreatmentWithEmbedded[]; total: number }> {
   const { page, limit, sort, embed } = query;
   const fromIndex = (page - 1) * limit;
   const toIndex = page * limit - 1;
@@ -102,6 +101,7 @@ export async function getTreatmentsForLawn(
     .range(fromIndex, toIndex);
 
   if (error) {
+    // eslint-disable-next-line no-console -- log errors for debugging
     console.error("getTreatmentsForLawn error:", error.code, error.message);
     throw error;
   }
@@ -126,10 +126,11 @@ export async function getTreatmentsForLawn(
   const { count, error: countError } = await countQuery;
 
   if (countError) {
+    // eslint-disable-next-line no-console -- log errors for debugging
     console.error(
       "getTreatmentsForLawn count error:",
       countError.code,
-      countError.message
+      countError.message,
     );
     throw countError;
   }
@@ -142,10 +143,10 @@ export async function getTreatmentsForLawn(
           mapRowWithTemplate(
             row as Treatment & {
               treatment_templates?: TreatmentTemplateSummary | null;
-            }
-          )
+            },
+          ),
         )
-      : (rows ?? []) as Treatment[];
+      : ((rows ?? []) as Treatment[]);
 
   return { data, total };
 }
@@ -167,7 +168,7 @@ export async function completeTreatment(
   supabase: SupabaseClient,
   treatmentId: string,
   userId: string,
-  dataWykonaniaRzeczywista?: string
+  dataWykonaniaRzeczywista?: string,
 ): Promise<Treatment> {
   const { data: treatment, error: fetchError } = await supabase
     .from("treatments")
@@ -177,11 +178,15 @@ export async function completeTreatment(
 
   if (fetchError || !treatment) {
     const err = fetchError ?? new Error("Zabieg nie znaleziony");
+    // eslint-disable-next-line no-console -- log errors for debugging
     console.error("completeTreatment fetch error:", err);
     throw err;
   }
 
-  const ownerId = await getLawnProfileOwnerId(supabase, treatment.lawn_profile_id);
+  const ownerId = await getLawnProfileOwnerId(
+    supabase,
+    treatment.lawn_profile_id,
+  );
   if (!ownerId || ownerId !== userId) {
     const err = new Error("Brak dostępu do zabiegu");
     (err as Error & { status?: number }).status = 403;
@@ -190,7 +195,7 @@ export async function completeTreatment(
 
   if (treatment.status !== "aktywny") {
     const err = new Error(
-      "Zabieg został już oznaczony jako wykonany lub odrzucony"
+      "Zabieg został już oznaczony jako wykonany lub odrzucony",
     );
     (err as Error & { status?: number }).status = 400;
     throw err;
@@ -207,6 +212,7 @@ export async function completeTreatment(
     .single();
 
   if (updateError) {
+    // eslint-disable-next-line no-console -- log errors for debugging
     console.error("completeTreatment update error:", updateError);
     throw updateError;
   }

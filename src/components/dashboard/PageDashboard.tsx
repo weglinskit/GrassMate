@@ -101,7 +101,10 @@ export function PageDashboard() {
 
   const treatmentsQuery = useQuery({
     queryKey: ["lawn-profiles", profile?.id, "treatments"],
-    queryFn: () => fetchTreatments(profile!.id),
+    queryFn: () => {
+      if (!profile?.id) throw new Error("No profile");
+      return fetchTreatments(profile.id);
+    },
     enabled: Boolean(profile?.id),
     retry: false,
   });

@@ -68,7 +68,9 @@ describe("lawn-profiles.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Nazwa może mieć co najwyżej 255 znaków");
+        expect(result.error.issues[0].message).toBe(
+          "Nazwa może mieć co najwyżej 255 znaków",
+        );
       }
     });
 
@@ -79,7 +81,9 @@ describe("lawn-profiles.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Szerokość geograficzna");
+        expect(result.error.issues[0].message).toContain(
+          "Szerokość geograficzna",
+        );
       }
     });
 
@@ -90,17 +94,25 @@ describe("lawn-profiles.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Szerokość geograficzna");
+        expect(result.error.issues[0].message).toContain(
+          "Szerokość geograficzna",
+        );
       }
     });
 
     it("akceptuje latitude na granicach -90 i 90", () => {
-      expect(createLawnProfileSchema.safeParse({ ...validCreatePayload, latitude: -90 }).success).toBe(
-        true
-      );
-      expect(createLawnProfileSchema.safeParse({ ...validCreatePayload, latitude: 90 }).success).toBe(
-        true
-      );
+      expect(
+        createLawnProfileSchema.safeParse({
+          ...validCreatePayload,
+          latitude: -90,
+        }).success,
+      ).toBe(true);
+      expect(
+        createLawnProfileSchema.safeParse({
+          ...validCreatePayload,
+          latitude: 90,
+        }).success,
+      ).toBe(true);
     });
 
     it("odrzuca longitude < -180", () => {
@@ -110,7 +122,9 @@ describe("lawn-profiles.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Długość geograficzna");
+        expect(result.error.issues[0].message).toContain(
+          "Długość geograficzna",
+        );
       }
     });
 
@@ -121,16 +135,24 @@ describe("lawn-profiles.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("Długość geograficzna");
+        expect(result.error.issues[0].message).toContain(
+          "Długość geograficzna",
+        );
       }
     });
 
     it("akceptuje longitude na granicach -180 i 180", () => {
       expect(
-        createLawnProfileSchema.safeParse({ ...validCreatePayload, longitude: -180 }).success
+        createLawnProfileSchema.safeParse({
+          ...validCreatePayload,
+          longitude: -180,
+        }).success,
       ).toBe(true);
       expect(
-        createLawnProfileSchema.safeParse({ ...validCreatePayload, longitude: 180 }).success
+        createLawnProfileSchema.safeParse({
+          ...validCreatePayload,
+          longitude: 180,
+        }).success,
       ).toBe(true);
     });
 
@@ -141,7 +163,9 @@ describe("lawn-profiles.schema", () => {
       });
       expect(resultZero.success).toBe(false);
       if (!resultZero.success) {
-        expect(resultZero.error.issues[0].message).toBe("Powierzchnia musi być większa od 0");
+        expect(resultZero.error.issues[0].message).toBe(
+          "Powierzchnia musi być większa od 0",
+        );
       }
 
       const resultNeg = createLawnProfileSchema.safeParse({
@@ -207,12 +231,16 @@ describe("lawn-profiles.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Opis może mieć co najwyżej 500 znaków");
+        expect(result.error.issues[0].message).toBe(
+          "Opis może mieć co najwyżej 500 znaków",
+        );
       }
     });
 
     it("akceptuje rodzaj_powierzchni null", () => {
-      const result = updateLawnProfileSchema.safeParse({ rodzaj_powierzchni: null });
+      const result = updateLawnProfileSchema.safeParse({
+        rodzaj_powierzchni: null,
+      });
       expect(result.success).toBe(true);
     });
   });

@@ -27,7 +27,9 @@ describe("treatments.schema", () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.status).toBe("wykonany");
-        expect(result.data.template_id).toBe("550e8400-e29b-41d4-a716-446655440000");
+        expect(result.data.template_id).toBe(
+          "550e8400-e29b-41d4-a716-446655440000",
+        );
         expect(result.data.from).toBe("2025-01-01");
         expect(result.data.to).toBe("2025-01-31");
         expect(result.data.page).toBe(2);
@@ -38,7 +40,12 @@ describe("treatments.schema", () => {
     });
 
     it("akceptuje wszystkie wartości statusu: aktywny, wykonany, odrzucony, wygasły", () => {
-      for (const status of ["aktywny", "wykonany", "odrzucony", "wygasły"] as const) {
+      for (const status of [
+        "aktywny",
+        "wykonany",
+        "odrzucony",
+        "wygasły",
+      ] as const) {
         const result = getTreatmentsQuerySchema.safeParse({ status });
         expect(result.success, `status: ${status}`).toBe(true);
       }
@@ -55,7 +62,9 @@ describe("treatments.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Nieprawidłowy format UUID template_id");
+        expect(result.error.issues[0].message).toBe(
+          "Nieprawidłowy format UUID template_id",
+        );
       }
     });
 
@@ -85,10 +94,18 @@ describe("treatments.schema", () => {
     });
 
     it("wymusza limit między 1 a 100", () => {
-      expect(getTreatmentsQuerySchema.safeParse({ limit: 0 }).success).toBe(false);
-      expect(getTreatmentsQuerySchema.safeParse({ limit: 101 }).success).toBe(false);
-      expect(getTreatmentsQuerySchema.safeParse({ limit: 1 }).success).toBe(true);
-      expect(getTreatmentsQuerySchema.safeParse({ limit: 100 }).success).toBe(true);
+      expect(getTreatmentsQuerySchema.safeParse({ limit: 0 }).success).toBe(
+        false,
+      );
+      expect(getTreatmentsQuerySchema.safeParse({ limit: 101 }).success).toBe(
+        false,
+      );
+      expect(getTreatmentsQuerySchema.safeParse({ limit: 1 }).success).toBe(
+        true,
+      );
+      expect(getTreatmentsQuerySchema.safeParse({ limit: 100 }).success).toBe(
+        true,
+      );
     });
 
     it("akceptuje sort: data_proponowana, data_proponowana_asc, data_proponowana_desc", () => {
@@ -111,8 +128,10 @@ describe("treatments.schema", () => {
       if (!result.success) {
         expect(
           result.error.issues.some(
-            (i) => i.message === "Data from musi być wcześniejsza lub równa dacie to"
-          )
+            (i) =>
+              i.message ===
+              "Data from musi być wcześniejsza lub równa dacie to",
+          ),
         ).toBe(true);
       }
     });

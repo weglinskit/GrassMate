@@ -3,13 +3,7 @@
  * Wszystkie DTO i Commands są wyprowadzone z definicji encji bazy danych (src/db/database.types.ts).
  */
 
-import type {
-  Database,
-  Enums,
-  Json,
-  Tables,
-  TablesInsert,
-} from "./db/database.types";
+import type { Enums, Tables, TablesInsert } from "./db/database.types";
 
 // =============================================================================
 // Re-eksport enumów z bazy danych (dla wygody i spójności nazewnictwa w API)
@@ -51,9 +45,6 @@ type TreatmentHistoryRow = Tables<"treatment_history">;
 
 /** Encja: weather_cache – wpis cache pogody (lokacja + data) */
 type WeatherCacheRow = Tables<"weather_cache">;
-
-/** Encja: analytics_events – zdarzenie analityczne */
-type AnalyticsEventRow = Tables<"analytics_events">;
 
 // =============================================================================
 // DTO – Data Transfer Objects (odpowiedzi API, mapowane 1:1 z encjami)
@@ -118,45 +109,45 @@ export type WeatherCacheEntry = WeatherCacheRow;
  * Jedna data w prognozie pogody (GET /api/weather/forecast).
  * Agregat z weather_cache / Open-Meteo – nie bezpośrednio encja.
  */
-export type WeatherForecastDay = {
+export interface WeatherForecastDay {
   temp_max?: number;
   opady?: number;
-};
+}
 
 /**
  * DTO: Odpowiedź prognozy pogody.
  * GET /api/weather/forecast – by_date: { "YYYY-MM-DD": WeatherForecastDay }, fetched_at.
  */
-export type WeatherForecastResponse = {
+export interface WeatherForecastResponse {
   by_date: Record<string, WeatherForecastDay>;
   fetched_at: string;
-};
+}
 
 /**
  * DTO: Odpowiedź endpointu rekomendacji.
  * GET /api/lawn-profiles/:lawnProfileId/recommendations.
  * Łączy zabiegi (Treatment[]) z opcjonalnym weather_summary.
  */
-export type RecommendationsResponse = {
+export interface RecommendationsResponse {
   treatments: Treatment[];
   weather_summary?: Record<string, unknown>;
-};
+}
 
 /**
  * DTO: Odpowiedź po utworzeniu zdarzenia analitycznego.
  * POST /api/analytics/events (202) – { data: { id: string } }.
  */
-export type AnalyticsEventCreated = {
+export interface AnalyticsEventCreated {
   id: string;
-};
+}
 
 /**
  * DTO: Odpowiedź po wywołaniu odświeżenia rekomendacji.
  * POST /api/lawn-profiles/:lawnProfileId/recommendations/refresh (202).
  */
-export type RefreshRecommendationsResponse = {
+export interface RefreshRecommendationsResponse {
   message: string;
-};
+}
 
 // =============================================================================
 // Command Model – modele żądań API (request body)
@@ -221,18 +212,18 @@ export type UpdateTreatmentCommand = Partial<
  * Request body: PATCH /api/treatments/:id/complete.
  * data_wykonania_rzeczywista opcjonalne (domyślnie dziś).
  */
-export type CompleteTreatmentCommand = {
+export interface CompleteTreatmentCommand {
   data_wykonania_rzeczywista?: string;
-};
+}
 
 /**
  * Command: Odrzucenie zabiegu.
  * Request body: PATCH /api/treatments/:id/reject.
  * powód_odrzucenia opcjonalne, max 500 znaków (walidacja po stronie serwera).
  */
-export type RejectTreatmentCommand = {
+export interface RejectTreatmentCommand {
   powód_odrzucenia?: string;
-};
+}
 
 /** Pola Insert dla analytics_events (user_id z JWT) */
 type AnalyticsEventInsert = TablesInsert<"analytics_events">;
@@ -255,36 +246,36 @@ export type AnalyticsEventCommand = Omit<
  * Odpowiedź listująca z paginacją (total).
  * Używane w GET /api/lawn-profiles, treatment-templates, treatments, treatment-history.
  */
-export type PaginatedResponse<T> = {
+export interface PaginatedResponse<T> {
   data: T[];
   total: number;
-};
+}
 
 /**
  * Opcjonalna paginacja w zapytaniach list (query params).
  * page 1-based, limit domyślnie 20, max 100.
  */
-export type PaginationParams = {
+export interface PaginationParams {
   page?: number;
   limit?: number;
-};
+}
 
 // =============================================================================
 // ViewModel / typy wspólne dla frontendu
 // =============================================================================
 
 /** Format błędu walidacji z API (tablica details). */
-export type ValidationErrorDetail = {
+export interface ValidationErrorDetail {
   field: string;
   message: string;
-};
+}
 
 /** Wspólny kształt odpowiedzi błędu API. */
-export type ApiErrorResponse = {
+export interface ApiErrorResponse {
   error: string;
   details?: ValidationErrorDetail[];
   message?: string;
-};
+}
 
 /** Stan widoku dashboardu. */
 export type DashboardState =
@@ -301,8 +292,4 @@ export type DashboardState =
  * - loaded: odpowiedź 200 z data: LawnProfile;
  * - error: błąd zapytania (np. 500, błąd sieci).
  */
-export type ProfileViewState =
-  | "loading"
-  | "no_profile"
-  | "loaded"
-  | "error";
+export type ProfileViewState = "loading" | "no_profile" | "loaded" | "error";

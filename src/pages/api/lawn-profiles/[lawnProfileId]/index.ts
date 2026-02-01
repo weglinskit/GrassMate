@@ -126,6 +126,7 @@ export async function PATCH({
       });
     }
 
+    // eslint-disable-next-line no-console -- log API errors for debugging
     console.error("PATCH /api/lawn-profiles/:id error:", e);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,

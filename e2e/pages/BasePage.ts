@@ -5,7 +5,10 @@ import type { Page } from "@playwright/test";
  * Rozszerzaj ją dla konkretnych stron (np. LoginPage, DashboardPage).
  */
 export class BasePage {
-  constructor(protected readonly page: Page, protected readonly path: string = "/") {}
+  constructor(
+    protected readonly page: Page,
+    protected readonly path = "/",
+  ) {}
 
   async goto() {
     await this.page.goto(this.path);

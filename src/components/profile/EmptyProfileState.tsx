@@ -21,8 +21,8 @@ export function EmptyProfileState({ className }: EmptyProfileStateProps) {
       <CardHeader>
         <CardTitle>Brak aktywnego profilu trawnika</CardTitle>
         <CardDescription>
-          Nie masz aktywnego profilu trawnika. Utwórz profil na dashboardzie, aby
-          rozpocząć planowanie pielęgnacji trawnika.
+          Nie masz aktywnego profilu trawnika. Utwórz profil na dashboardzie,
+          aby rozpocząć planowanie pielęgnacji trawnika.
         </CardDescription>
       </CardHeader>
       <CardContent>

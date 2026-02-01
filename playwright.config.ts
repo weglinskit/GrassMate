@@ -1,6 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
 
-
 /**
  * Konfiguracja E2E – tylko Chromium/Desktop Chrome (zgodnie z .cursor/rules/playwright-e2e-testing.mdc).
  * Uruchom serwer: npm run dev (port 3000) lub npm run preview po buildzie.
@@ -25,7 +24,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: process.env.CI ? "npm run build && npm run preview" : "npm run dev",
+    command: process.env.CI
+      ? "npm run build && npm run preview"
+      : "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: true,
   },

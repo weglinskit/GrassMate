@@ -18,7 +18,7 @@ test.describe("Formularz tworzenia lawn profile", () => {
     const activeProfileResponse = page.waitForResponse(
       (res) =>
         res.url().includes("/api/lawn-profiles/active") && res.status() === 200,
-      { timeout: 15_000 }
+      { timeout: 15_000 },
     );
 
     const isLoginVisible = await loginHeading.isVisible().catch(() => false);

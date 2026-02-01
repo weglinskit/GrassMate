@@ -16,7 +16,10 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, "Hasło jest wymagane")
-    .min(PASSWORD_MIN_LENGTH, `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków`),
+    .min(
+      PASSWORD_MIN_LENGTH,
+      `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków`,
+    ),
 });
 
 /** Schemat rejestracji: e-mail, hasło, potwierdzenie hasła. */
@@ -29,7 +32,10 @@ export const registerSchema = z
     password: z
       .string()
       .min(1, "Hasło jest wymagane")
-      .min(PASSWORD_MIN_LENGTH, `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków`),
+      .min(
+        PASSWORD_MIN_LENGTH,
+        `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków`,
+      ),
     passwordConfirm: z.string().min(1, "Potwierdzenie hasła jest wymagane"),
   })
   .refine((data) => data.password === data.passwordConfirm, {
@@ -51,7 +57,10 @@ export const resetPasswordSchema = z
     password: z
       .string()
       .min(1, "Hasło jest wymagane")
-      .min(PASSWORD_MIN_LENGTH, `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków`),
+      .min(
+        PASSWORD_MIN_LENGTH,
+        `Hasło musi mieć co najmniej ${PASSWORD_MIN_LENGTH} znaków`,
+      ),
     passwordConfirm: z.string().min(1, "Potwierdzenie hasła jest wymagane"),
   })
   .refine((data) => data.password === data.passwordConfirm, {

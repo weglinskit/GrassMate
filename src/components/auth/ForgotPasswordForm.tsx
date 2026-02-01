@@ -14,7 +14,6 @@ interface ForgotPasswordFormProps {
 }
 
 export function ForgotPasswordForm({
-  returnUrl,
   onSuccess,
   onError,
 }: ForgotPasswordFormProps) {
@@ -31,13 +30,13 @@ export function ForgotPasswordForm({
 
       if (!result.success) {
         const errors: Record<string, string> = {};
-        result.error.flatten().fieldErrors &&
-          Object.entries(result.error.flatten().fieldErrors).forEach(
-            ([field, messages]) => {
-              const msg = Array.isArray(messages) ? messages[0] : messages;
-              if (msg) errors[field] = msg;
-            }
-          );
+        const fieldErrors = result.error.flatten().fieldErrors;
+        if (fieldErrors) {
+          Object.entries(fieldErrors).forEach(([field, messages]) => {
+            const msg = Array.isArray(messages) ? messages[0] : messages;
+            if (msg) errors[field] = msg;
+          });
+        }
         setFieldErrors(errors);
         onError?.(errors);
         return;
@@ -50,7 +49,7 @@ export function ForgotPasswordForm({
         setIsSubmitting(false);
       }
     },
-    [email, onSuccess, onError]
+    [email, onSuccess, onError],
   );
 
   const hasError = (field: string) => Boolean(fieldErrors[field]);

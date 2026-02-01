@@ -106,7 +106,8 @@ export class LawnProfileCreateForm {
     rodzajPowierzchni?: string;
   }): Promise<void> {
     await this.fillNazwa(options.nazwa);
-    if (options.latitude !== undefined) await this.fillLatitude(options.latitude);
+    if (options.latitude !== undefined)
+      await this.fillLatitude(options.latitude);
     if (options.longitude !== undefined)
       await this.fillLongitude(options.longitude);
     if (options.wielkoscM2 !== undefined)

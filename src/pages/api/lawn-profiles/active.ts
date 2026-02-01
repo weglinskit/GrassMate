@@ -26,6 +26,7 @@ export async function GET({
 }) {
   const supabase = locals.supabase;
   if (!supabase) {
+    // eslint-disable-next-line no-console -- log API errors for debugging
     console.error("GET /api/lawn-profiles/active: brak locals.supabase");
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
@@ -51,6 +52,7 @@ export async function GET({
       headers: JSON_HEADERS,
     });
   } catch (e) {
+    // eslint-disable-next-line no-console -- log API errors for debugging
     console.error("GET /api/lawn-profiles/active error:", e);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,

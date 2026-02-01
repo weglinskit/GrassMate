@@ -5,10 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabaseBrowser } from "@/db/supabase.browser";
 import { mapAuthErrorToMessage } from "@/lib/auth.errors";
-import {
-  registerSchema,
-  type RegisterSchema,
-} from "@/lib/schemas/auth.schema";
+import { registerSchema, type RegisterSchema } from "@/lib/schemas/auth.schema";
 
 interface RegisterFormProps {
   returnUrl?: string;
@@ -62,13 +59,13 @@ export function RegisterForm({
 
       if (!result.success) {
         const errors: Record<string, string> = {};
-        result.error.flatten().fieldErrors &&
-          Object.entries(result.error.flatten().fieldErrors).forEach(
-            ([field, messages]) => {
-              const msg = Array.isArray(messages) ? messages[0] : messages;
-              if (msg) errors[field] = msg;
-            }
-          );
+        const fieldErrors = result.error.flatten().fieldErrors;
+        if (fieldErrors) {
+          Object.entries(fieldErrors).forEach(([field, messages]) => {
+            const msg = Array.isArray(messages) ? messages[0] : messages;
+            if (msg) errors[field] = msg;
+          });
+        }
         setFieldErrors(errors);
         onError?.(errors);
         return;

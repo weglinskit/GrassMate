@@ -30,7 +30,9 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Adres e-mail jest wymagany");
+        expect(result.error.issues[0].message).toBe(
+          "Adres e-mail jest wymagany",
+        );
       }
     });
 
@@ -41,7 +43,9 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Podaj prawidłowy adres e-mail");
+        expect(result.error.issues[0].message).toBe(
+          "Podaj prawidłowy adres e-mail",
+        );
       }
     });
 
@@ -63,7 +67,9 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Hasło musi mieć co najmniej 6 znaków");
+        expect(result.error.issues[0].message).toBe(
+          "Hasło musi mieć co najmniej 6 znaków",
+        );
       }
     });
 
@@ -98,7 +104,7 @@ describe("auth.schema", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         const refineError = result.error.issues.find(
-          (i) => i.message === "Hasła muszą się zgadzać"
+          (i) => i.message === "Hasła muszą się zgadzać",
         );
         expect(refineError).toBeDefined();
       }
@@ -112,9 +118,11 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.message === "Potwierdzenie hasła jest wymagane")).toBe(
-          true
-        );
+        expect(
+          result.error.issues.some(
+            (i) => i.message === "Potwierdzenie hasła jest wymagane",
+          ),
+        ).toBe(true);
       }
     });
 
@@ -126,7 +134,9 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Hasło musi mieć co najmniej 6 znaków");
+        expect(result.error.issues[0].message).toBe(
+          "Hasło musi mieć co najmniej 6 znaków",
+        );
       }
     });
   });
@@ -142,7 +152,9 @@ describe("auth.schema", () => {
       const result = forgotPasswordSchema.safeParse({ email: "" });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Adres e-mail jest wymagany");
+        expect(result.error.issues[0].message).toBe(
+          "Adres e-mail jest wymagany",
+        );
       }
     });
 
@@ -150,7 +162,9 @@ describe("auth.schema", () => {
       const result = forgotPasswordSchema.safeParse({ email: "zly" });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Podaj prawidłowy adres e-mail");
+        expect(result.error.issues[0].message).toBe(
+          "Podaj prawidłowy adres e-mail",
+        );
       }
     });
   });
@@ -171,7 +185,11 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.message === "Hasła muszą się zgadzać")).toBe(true);
+        expect(
+          result.error.issues.some(
+            (i) => i.message === "Hasła muszą się zgadzać",
+          ),
+        ).toBe(true);
       }
     });
 
@@ -182,7 +200,9 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe("Hasło musi mieć co najmniej 6 znaków");
+        expect(result.error.issues[0].message).toBe(
+          "Hasło musi mieć co najmniej 6 znaków",
+        );
       }
     });
 
@@ -193,9 +213,11 @@ describe("auth.schema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues.some((i) => i.message === "Potwierdzenie hasła jest wymagane")).toBe(
-          true
-        );
+        expect(
+          result.error.issues.some(
+            (i) => i.message === "Potwierdzenie hasła jest wymagane",
+          ),
+        ).toBe(true);
       }
     });
   });

@@ -6,7 +6,9 @@ interface DashboardLoaderProps {
   variant?: DashboardLoaderVariant;
 }
 
-export function DashboardLoader({ variant = "treatments" }: DashboardLoaderProps) {
+export function DashboardLoader({
+  variant = "treatments",
+}: DashboardLoaderProps) {
   if (variant === "profile") {
     return (
       <div

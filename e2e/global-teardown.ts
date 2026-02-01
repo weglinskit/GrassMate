@@ -28,7 +28,7 @@ export default async function globalTeardown(): Promise<void> {
 
   if (!url || !anonKey) {
     log(
-      "Pominięto czyszczenie lawn_profiles: brak PUBLIC_SUPABASE_URL lub PUBLIC_SUPABASE_ANON_KEY w .env"
+      "Pominięto czyszczenie lawn_profiles: brak PUBLIC_SUPABASE_URL lub PUBLIC_SUPABASE_ANON_KEY w .env",
     );
     return;
   }
@@ -39,7 +39,9 @@ export default async function globalTeardown(): Promise<void> {
     await supabase.auth.signInWithPassword({ email, password });
 
   if (signInError) {
-    log(`Nie zalogowano użytkownika E2E, pominięto czyszczenie: ${signInError.message}`);
+    log(
+      `Nie zalogowano użytkownika E2E, pominięto czyszczenie: ${signInError.message}`,
+    );
     return;
   }
 
@@ -61,5 +63,7 @@ export default async function globalTeardown(): Promise<void> {
   }
 
   const count = deleted?.length ?? 0;
-  log(`Zakończono. Usunięto ${count} wpisów lawn_profiles dla użytkownika E2E.`);
+  log(
+    `Zakończono. Usunięto ${count} wpisów lawn_profiles dla użytkownika E2E.`,
+  );
 }

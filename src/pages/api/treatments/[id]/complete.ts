@@ -116,6 +116,7 @@ export async function PATCH({
         { status: 403, headers: JSON_HEADERS },
       );
     }
+    // eslint-disable-next-line no-console -- log API errors for debugging
     console.error("PATCH /api/treatments/[id]/complete error:", e);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,

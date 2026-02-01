@@ -13,7 +13,7 @@ const TEST_IDS = {
 export class DashboardPage extends BasePage {
   readonly createProfileForm: LawnProfileCreateForm;
 
-  constructor(page: Page, path: string = "/") {
+  constructor(page: Page, path = "/") {
     super(page, path);
     this.createProfileForm = new LawnProfileCreateForm(page);
   }

@@ -58,9 +58,7 @@ export const updateLawnProfileSchema = z
       .number()
       .min(-180, "Długość geograficzna musi być od -180 do 180")
       .max(180, "Długość geograficzna musi być od -180 do 180"),
-    wielkość_m2: z
-      .number()
-      .positive("Powierzchnia musi być większa od 0"),
+    wielkość_m2: z.number().positive("Powierzchnia musi być większa od 0"),
     nasłonecznienie: nasłonecznienieEnum,
     rodzaj_powierzchni: z
       .string()

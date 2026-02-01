@@ -15,7 +15,7 @@ export function TreatmentsList({
     (treatment: Treatment) => {
       onMarkComplete?.(treatment);
     },
-    [onMarkComplete]
+    [onMarkComplete],
   );
 
   if (treatments.length === 0) {
@@ -24,9 +24,7 @@ export function TreatmentsList({
         className="rounded-xl border border-dashed border-muted-foreground/25 bg-muted/30 px-6 py-12 text-center"
         role="status"
       >
-        <p className="text-muted-foreground">
-          Brak nadchodzących zabiegów
-        </p>
+        <p className="text-muted-foreground">Brak nadchodzących zabiegów</p>
         <p className="mt-1 text-sm text-muted-foreground">
           Sprawdź swój harmonogram w innym terminie lub dodaj nowe zabiegi.
         </p>
@@ -37,7 +35,6 @@ export function TreatmentsList({
   return (
     <ul
       className="grid gap-4 sm:grid-cols-1 md:grid-cols-2"
-      role="list"
       aria-label="Lista nadchodzących zabiegów"
     >
       {treatments.map((treatment) => (

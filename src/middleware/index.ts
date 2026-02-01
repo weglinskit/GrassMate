@@ -23,13 +23,13 @@ const SKIP_PATHS_PREFIX = ["/api", "/_astro", "/favicon"];
 
 function isProtectedPath(pathname: string): boolean {
   return PROTECTED_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
+    (p) => pathname === p || pathname.startsWith(p + "/"),
   );
 }
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "/")
+    (p) => pathname === p || pathname.startsWith(p + "/"),
   );
 }
 
@@ -41,31 +41,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const cookieHeader = context.request.headers.get("Cookie") ?? "";
   const cookies = parse(cookieHeader);
 
-  const supabase = createServerClient<Database>(
-    supabaseUrl,
-    supabaseAnonKey,
-    {
-      cookies: {
-        getAll() {
-          return Object.entries(cookies).map(([name, value]) => ({
-            name,
-            value: value ?? "",
-          }));
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value, options } of cookiesToSet) {
-            context.cookies.set(name, value ?? "", {
-              path: options?.path ?? "/",
-              maxAge: options?.maxAge,
-              secure: options?.secure,
-              httpOnly: options?.httpOnly ?? true,
-              sameSite: (options?.sameSite as "lax" | "strict" | "none") ?? "lax",
-            });
-          }
-        },
+  const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return Object.entries(cookies).map(([name, value]) => ({
+          name,
+          value: value ?? "",
+        }));
       },
-    }
-  );
+      setAll(cookiesToSet) {
+        for (const { name, value, options } of cookiesToSet) {
+          context.cookies.set(name, value ?? "", {
+            path: options?.path ?? "/",
+            maxAge: options?.maxAge,
+            secure: options?.secure,
+            httpOnly: options?.httpOnly ?? true,
+            sameSite: (options?.sameSite as "lax" | "strict" | "none") ?? "lax",
+          });
+        }
+      },
+    },
+  });
 
   context.locals.supabase = supabase;
 
@@ -76,8 +72,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
-  const authGuardEnabled =
-    import.meta.env.PUBLIC_AUTH_GUARD_ENABLED === "true";
+  const authGuardEnabled = import.meta.env.PUBLIC_AUTH_GUARD_ENABLED === "true";
 
   if (authGuardEnabled && isProtectedPath(pathname)) {
     const {

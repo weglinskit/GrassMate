@@ -67,13 +67,13 @@ export function ProfileCreateForm({
 
       if (!result.success) {
         const errors: Record<string, string> = {};
-        result.error.flatten().fieldErrors &&
-          Object.entries(result.error.flatten().fieldErrors).forEach(
-            ([field, messages]) => {
-              const msg = Array.isArray(messages) ? messages[0] : messages;
-              if (msg) errors[field] = msg;
-            },
-          );
+        const fieldErrors = result.error.flatten().fieldErrors;
+        if (fieldErrors) {
+          Object.entries(fieldErrors).forEach(([field, messages]) => {
+            const msg = Array.isArray(messages) ? messages[0] : messages;
+            if (msg) errors[field] = msg;
+          });
+        }
         setFieldErrors(errors);
         onError?.(
           Object.entries(errors).map(([field, message]) => ({
@@ -127,6 +127,7 @@ export function ProfileCreateForm({
           onSuccess?.(json.data as LawnProfile);
         }
       } catch (err) {
+        // eslint-disable-next-line no-console -- log submit errors in dev
         console.error("ProfileCreateForm submit error:", err);
         setFieldErrors({
           _form: "Błąd sieci. Sprawdź połączenie i spróbuj ponownie.",
