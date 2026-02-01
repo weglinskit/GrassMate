@@ -1,7 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabaseBrowser } from "@/db/supabase.browser";
+import { mapAuthErrorToMessage } from "@/lib/auth.errors";
 import {
   registerSchema,
   type RegisterSchema,
@@ -23,6 +26,28 @@ export function RegisterForm({
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function redirectIfLoggedIn() {
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
+      if (cancelled) return;
+      setIsCheckingSession(false);
+      if (session) {
+        const target = returnUrl && returnUrl.startsWith("/") ? returnUrl : "/";
+        window.location.href = target;
+      }
+    }
+
+    redirectIfLoggedIn();
+    return () => {
+      cancelled = true;
+    };
+  }, [returnUrl]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -51,15 +76,55 @@ export function RegisterForm({
 
       setIsSubmitting(true);
       try {
+        const { data, error } = await supabaseBrowser.auth.signUp({
+          email: result.data.email,
+          password: result.data.password,
+        });
+
+        if (error) {
+          const message = mapAuthErrorToMessage(error, "register");
+          toast.error(message);
+          onError?.({ _form: message });
+          return;
+        }
+
         onSuccess?.(result.data);
+
+        if (data.session) {
+          const target =
+            returnUrl && returnUrl.startsWith("/") ? returnUrl : "/";
+          window.location.href = target;
+          return;
+        }
+
+        toast.success(
+          "Sprawdź skrzynkę e-mail i potwierdź adres — wysłaliśmy link do potwierdzenia konta.",
+        );
+        const loginUrl = `/login${returnUrl ? `?returnUrl=${encodeURIComponent(returnUrl)}` : ""}`;
+        window.location.href = loginUrl;
+      } catch (err) {
+        const message = mapAuthErrorToMessage(
+          err instanceof Error ? err : { message: "" },
+          "register",
+        );
+        toast.error(message);
+        onError?.({ _form: "Wystąpił błąd. Spróbuj ponownie." });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [email, password, passwordConfirm, onSuccess, onError]
+    [email, password, passwordConfirm, returnUrl, onSuccess, onError],
   );
 
   const hasError = (field: string) => Boolean(fieldErrors[field]);
+
+  if (isCheckingSession) {
+    return (
+      <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+        Sprawdzanie sesji…
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>

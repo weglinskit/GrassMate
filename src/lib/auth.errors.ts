@@ -3,8 +3,11 @@
  * Zgodnie z auth-spec: nie ujawniać wewnętrznych komunikatów Supabase.
  */
 
+export type AuthErrorContext = "login" | "register";
+
 export function mapAuthErrorToMessage(
   error: { message?: string } | null,
+  context: AuthErrorContext = "login",
 ): string {
   if (!error?.message) {
     return "Wystąpił błąd. Spróbuj ponownie.";
@@ -46,5 +49,7 @@ export function mapAuthErrorToMessage(
     return "Błąd połączenia. Sprawdź internet i spróbuj ponownie.";
   }
 
-  return "Wystąpił błąd logowania. Spróbuj ponownie.";
+  return context === "register"
+    ? "Wystąpił błąd rejestracji. Spróbuj ponownie."
+    : "Wystąpił błąd logowania. Spróbuj ponownie.";
 }
