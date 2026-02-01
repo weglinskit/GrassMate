@@ -9,6 +9,8 @@
 create extension if not exists pgcrypto;
 
 -- Wstaw użytkownika tylko gdy jeszcze nie istnieje (bezpieczne przy ponownym uruchomieniu migracji).
+-- Kolumny tokenów muszą być '' zamiast NULL – backend Auth skanuje je do string i NULL powoduje
+-- błąd "Database error querying schema" przy logowaniu.
 insert into auth.users (
   id,
   instance_id,
@@ -17,6 +19,10 @@ insert into auth.users (
   email,
   encrypted_password,
   email_confirmed_at,
+  confirmation_token,
+  email_change,
+  email_change_token_new,
+  recovery_token,
   raw_app_meta_data,
   raw_user_meta_data,
   created_at,
@@ -29,6 +35,10 @@ insert into auth.users (
   'dev@grassmate.local',
   crypt('dev-password', gen_salt('bf')),
   now(),
+  '',
+  '',
+  '',
+  '',
   '{"provider": "email", "providers": ["email"]}'::jsonb,
   '{}'::jsonb,
   now(),

@@ -1,18 +1,14 @@
 /**
  * Endpoint API: GET /api/lawn-profiles/active
  * Zwraca aktywny profil trawnika użytkownika (is_active = true) lub null.
- *
- * Tymczasowe obejście (bez JWT): używamy DEV_USER_ID – ten sam co w POST /api/lawn-profiles.
- * Po wdrożeniu auth: pobierać userId z JWT (supabase.auth.getUser(jwt)).
+ * Wymagana autentykacja: Authorization: Bearer <JWT>. Brak/wygasły token → 401.
  */
 
+import { getUserIdFromRequest } from "../../../lib/auth.server";
 import { getActiveLawnProfile } from "../../../lib/services/lawn-profiles.service";
 import type { LawnProfile } from "../../../types";
 
 export const prerender = false;
-
-/** Tymczasowe obejście – ten sam zahardkodowany user_id co w POST /api/lawn-profiles. */
-const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
@@ -22,6 +18,7 @@ const JSON_HEADERS = { "Content-Type": "application/json" };
  * Brak locals.supabase → 500. Błąd bazy → 500 i log po stronie serwera.
  */
 export async function GET({
+  request,
   locals,
 }: {
   request: Request;
@@ -36,10 +33,18 @@ export async function GET({
     });
   }
 
+  const userId = await getUserIdFromRequest(request, supabase);
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: JSON_HEADERS,
+    });
+  }
+
   try {
     const data: LawnProfile | null = await getActiveLawnProfile(
       supabase,
-      DEV_USER_ID
+      userId,
     );
     return new Response(JSON.stringify({ data }), {
       status: 200,

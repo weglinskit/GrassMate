@@ -1,22 +1,19 @@
 /**
  * Endpoint API: GET /api/lawn-profiles/:lawnProfileId/treatments
  * Zwraca paginowaną listę zabiegów powiązanych z danym profilem trawnika.
- *
- * Wymagana autentykacja (JWT): brak/wygasły token → 401.
+ * Wymagana autentykacja: Authorization: Bearer <JWT>. Brak/wygasły token → 401.
  * Weryfikacja dostępu: profil musi istnieć (404) i user_id profilu = auth.uid() (403).
- *
- * Tymczasowe obejście (bez JWT): używamy DEV_USER_ID – ten sam co w POST /api/lawn-profiles.
- * Po wdrożeniu auth: pobierać userId z JWT (supabase.auth.getUser(jwt) z nagłówka Authorization).
  */
 
-import { getLawnProfileOwnerId, getTreatmentsForLawn } from "../../../../lib/services/treatments.service";
+import { getUserIdFromRequest } from "../../../../lib/auth.server";
+import {
+  getLawnProfileOwnerId,
+  getTreatmentsForLawn,
+} from "../../../../lib/services/treatments.service";
 import { getTreatmentsQuerySchema } from "../../../../lib/schemas/treatments.schema";
 import { z } from "zod";
 
 export const prerender = false;
-
-/** Tymczasowe obejście – zahardkodowany user_id dopóki auth (JWT) nie jest wdrożony. */
-const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
@@ -51,7 +48,7 @@ export async function GET({
   const supabase = locals.supabase;
   if (!supabase) {
     console.error(
-      "GET /api/lawn-profiles/[lawnProfileId]/treatments: brak locals.supabase"
+      "GET /api/lawn-profiles/[lawnProfileId]/treatments: brak locals.supabase",
     );
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
@@ -63,26 +60,36 @@ export async function GET({
   if (!pathResult.success) {
     const details = pathResult.error.flatten().fieldErrors;
     const detailList = Object.entries(details).flatMap(([field, messages]) =>
-      (messages ?? []).map((message) => ({ field, message }))
+      (messages ?? []).map((message) => ({ field, message })),
     );
     return new Response(
       JSON.stringify({
         error: "Validation error",
         details:
-          detailList.length > 0 ? detailList : [{ message: pathResult.error.message }],
+          detailList.length > 0
+            ? detailList
+            : [{ message: pathResult.error.message }],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
 
   const { lawnProfileId } = pathResult.data;
+
+  const userId = await getUserIdFromRequest(request, supabase);
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: JSON_HEADERS,
+    });
+  }
 
   const queryParams = queryParamsFromRequest(request);
   const queryResult = getTreatmentsQuerySchema.safeParse(queryParams);
   if (!queryResult.success) {
     const details = queryResult.error.flatten().fieldErrors;
     const detailList = Object.entries(details).flatMap(([field, messages]) =>
-      (messages ?? []).map((message) => ({ field, message }))
+      (messages ?? []).map((message) => ({ field, message })),
     );
     return new Response(
       JSON.stringify({
@@ -92,11 +99,9 @@ export async function GET({
             ? detailList
             : [{ field: "query", message: queryResult.error.message }],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
-
-  const userId = DEV_USER_ID;
 
   const ownerId = await getLawnProfileOwnerId(supabase, lawnProfileId);
   if (ownerId === null) {
@@ -105,7 +110,7 @@ export async function GET({
         error: "Not Found",
         message: "Profil trawnika nie został znaleziony",
       }),
-      { status: 404, headers: JSON_HEADERS }
+      { status: 404, headers: JSON_HEADERS },
     );
   }
 
@@ -115,7 +120,7 @@ export async function GET({
         error: "Forbidden",
         message: "Brak dostępu do tego profilu trawnika",
       }),
-      { status: 403, headers: JSON_HEADERS }
+      { status: 403, headers: JSON_HEADERS },
     );
   }
 
@@ -123,7 +128,7 @@ export async function GET({
     const { data, total } = await getTreatmentsForLawn(
       supabase,
       lawnProfileId,
-      queryResult.data
+      queryResult.data,
     );
     return new Response(JSON.stringify({ data, total }), {
       status: 200,
@@ -132,7 +137,7 @@ export async function GET({
   } catch (e) {
     console.error(
       "GET /api/lawn-profiles/[lawnProfileId]/treatments error:",
-      e
+      e,
     );
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,

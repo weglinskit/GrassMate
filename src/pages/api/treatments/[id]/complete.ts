@@ -1,18 +1,15 @@
 /**
  * Endpoint API: PATCH /api/treatments/:id/complete
  * Oznacza zabieg jako wykonany.
- *
- * Tymczasowe obejście (bez JWT): używamy DEV_USER_ID.
- * Po wdrożeniu auth: pobierać userId z JWT.
+ * Wymagana autentykacja: Authorization: Bearer <JWT>. Brak/wygasły token → 401.
  */
 
+import { getUserIdFromRequest } from "../../../../lib/auth.server";
 import { completeTreatment } from "../../../../lib/services/treatments.service";
 import { completeTreatmentSchema } from "../../../../lib/schemas/complete-treatment.schema";
 import { z } from "zod";
 
 export const prerender = false;
-
-const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
@@ -37,6 +34,14 @@ export async function PATCH({
     });
   }
 
+  const userId = await getUserIdFromRequest(request, supabase);
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: JSON_HEADERS,
+    });
+  }
+
   const pathResult = idSchema.safeParse(params);
   if (!pathResult.success) {
     return new Response(
@@ -44,7 +49,7 @@ export async function PATCH({
         error: "Validation error",
         details: [{ message: pathResult.error.message }],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
 
@@ -62,7 +67,7 @@ export async function PATCH({
         error: "Validation error",
         details: [{ message: "Nieprawidłowy JSON w body" }],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
 
@@ -70,15 +75,17 @@ export async function PATCH({
   if (!parsed.success) {
     const details = parsed.error.flatten().fieldErrors;
     const detailList = Object.entries(details).flatMap(([field, messages]) =>
-      (messages ?? []).map((msg) => ({ field, message: msg }))
+      (messages ?? []).map((msg) => ({ field, message: msg })),
     );
     return new Response(
       JSON.stringify({
         error: "Validation error",
         details:
-          detailList.length > 0 ? detailList : [{ message: parsed.error.message }],
+          detailList.length > 0
+            ? detailList
+            : [{ message: parsed.error.message }],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
 
@@ -88,8 +95,8 @@ export async function PATCH({
     const treatment = await completeTreatment(
       supabase,
       treatmentId,
-      DEV_USER_ID,
-      dataWykonania
+      userId,
+      dataWykonania,
     );
     return new Response(JSON.stringify({ data: treatment }), {
       status: 200,
@@ -98,15 +105,15 @@ export async function PATCH({
   } catch (e) {
     const err = e as Error & { status?: number; code?: string };
     if (err.status === 400) {
-      return new Response(
-        JSON.stringify({ error: err.message }),
-        { status: 400, headers: JSON_HEADERS }
-      );
+      return new Response(JSON.stringify({ error: err.message }), {
+        status: 400,
+        headers: JSON_HEADERS,
+      });
     }
     if (err.status === 403 || err.code === "PGRST116") {
       return new Response(
         JSON.stringify({ error: "Brak dostępu do zabiegu" }),
-        { status: 403, headers: JSON_HEADERS }
+        { status: 403, headers: JSON_HEADERS },
       );
     }
     console.error("PATCH /api/treatments/[id]/complete error:", e);

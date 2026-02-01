@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getAccessToken } from "@/lib/auth.browser";
 import { createLawnProfileSchema } from "@/lib/schemas/lawn-profiles.schema";
 import type { LawnProfile } from "@/types";
 import type { ValidationErrorDetail } from "@/types";
@@ -24,7 +25,10 @@ const NASŁONECZNIENIE_OPTIONS = [
   { value: "wysokie", label: "Wysokie" },
 ] as const;
 
-export function ProfileCreateForm({ onSuccess, onError }: ProfileCreateFormProps) {
+export function ProfileCreateForm({
+  onSuccess,
+  onError,
+}: ProfileCreateFormProps) {
   const [nazwa, setNazwa] = useState("");
   const [latitude, setLatitude] = useState("");
   const [longitude, setLongitude] = useState("");
@@ -68,11 +72,14 @@ export function ProfileCreateForm({ onSuccess, onError }: ProfileCreateFormProps
             ([field, messages]) => {
               const msg = Array.isArray(messages) ? messages[0] : messages;
               if (msg) errors[field] = msg;
-            }
+            },
           );
         setFieldErrors(errors);
         onError?.(
-          Object.entries(errors).map(([field, message]) => ({ field, message }))
+          Object.entries(errors).map(([field, message]) => ({
+            field,
+            message,
+          })),
         );
         return;
       }
@@ -80,9 +87,13 @@ export function ProfileCreateForm({ onSuccess, onError }: ProfileCreateFormProps
       setIsSubmitting(true);
 
       try {
+        const token = await getAccessToken();
         const res = await fetch("/api/lawn-profiles", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify(result.data),
         });
 
@@ -94,15 +105,20 @@ export function ProfileCreateForm({ onSuccess, onError }: ProfileCreateFormProps
             (json.details as ValidationErrorDetail[]).forEach(
               ({ field, message }) => {
                 errors[field] = message;
-              }
+              },
             );
             setFieldErrors(errors);
             onError?.(json.details);
           } else {
             setFieldErrors({
-              _form: json.error ?? json.message ?? "Wystąpił błąd podczas tworzenia profilu",
+              _form:
+                json.error ??
+                json.message ??
+                "Wystąpił błąd podczas tworzenia profilu",
             });
-            onError?.([{ field: "_form", message: json.error ?? json.message }]);
+            onError?.([
+              { field: "_form", message: json.error ?? json.message },
+            ]);
           }
           return;
         }
@@ -129,7 +145,7 @@ export function ProfileCreateForm({ onSuccess, onError }: ProfileCreateFormProps
       rodzajPowierzchni,
       onSuccess,
       onError,
-    ]
+    ],
   );
 
   const hasError = (field: string) => Boolean(fieldErrors[field]);
@@ -176,7 +192,9 @@ export function ProfileCreateForm({ onSuccess, onError }: ProfileCreateFormProps
             onChange={(e) => setLatitude(e.target.value)}
             placeholder="-90 do 90"
             aria-invalid={hasError("latitude")}
-            aria-describedby={hasError("latitude") ? "latitude-error" : undefined}
+            aria-describedby={
+              hasError("latitude") ? "latitude-error" : undefined
+            }
           />
           {fieldErrors.latitude && (
             <p
@@ -280,7 +298,8 @@ export function ProfileCreateForm({ onSuccess, onError }: ProfileCreateFormProps
 
       <div className="space-y-2">
         <Label htmlFor="rodzaj_powierzchni">
-          Rodzaj powierzchni <span className="text-muted-foreground">(opcjonalnie)</span>
+          Rodzaj powierzchni{" "}
+          <span className="text-muted-foreground">(opcjonalnie)</span>
         </Label>
         <Input
           id="rodzaj_powierzchni"

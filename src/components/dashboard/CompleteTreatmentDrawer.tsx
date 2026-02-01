@@ -9,6 +9,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/components/ui/sheet";
+import { getAccessToken } from "@/lib/auth.browser";
 import type { Treatment } from "@/types";
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -68,9 +69,13 @@ export function CompleteTreatmentDrawer({
       setIsSubmitting(true);
 
       try {
+        const token = await getAccessToken();
         const res = await fetch(`/api/treatments/${treatment.id}/complete`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({
             data_wykonania_rzeczywista: date,
           }),
@@ -97,7 +102,7 @@ export function CompleteTreatmentDrawer({
         setIsSubmitting(false);
       }
     },
-    [treatment, dateValue, onOpenChange, onSuccess, onError]
+    [treatment, dateValue, onOpenChange, onSuccess, onError],
   );
 
   const handleOpenChange = useCallback(
@@ -106,7 +111,7 @@ export function CompleteTreatmentDrawer({
         onOpenChange(nextOpen);
       }
     },
-    [isSubmitting, onOpenChange]
+    [isSubmitting, onOpenChange],
   );
 
   return (
@@ -117,18 +122,14 @@ export function CompleteTreatmentDrawer({
         </SheetHeader>
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-6">
           <div className="space-y-2">
-            <Label htmlFor="data_wykonania_rzeczywista">
-              Data wykonania
-            </Label>
+            <Label htmlFor="data_wykonania_rzeczywista">Data wykonania</Label>
             <Input
               id="data_wykonania_rzeczywista"
               type="date"
               value={dateValue}
               onChange={(e) => setDateValue(e.target.value)}
               aria-invalid={Boolean(dateError)}
-              aria-describedby={
-                dateError ? "data_wykonania-error" : undefined
-              }
+              aria-describedby={dateError ? "data_wykonania-error" : undefined}
             />
             {dateError && (
               <p

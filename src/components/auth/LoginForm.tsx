@@ -1,7 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabaseBrowser } from "@/db/supabase.browser";
+import { mapAuthErrorToMessage } from "@/lib/auth.errors";
 import { loginSchema, type LoginSchema } from "@/lib/schemas/auth.schema";
 
 interface LoginFormProps {
@@ -10,15 +13,33 @@ interface LoginFormProps {
   onError?: (fieldErrors: Record<string, string>) => void;
 }
 
-export function LoginForm({
-  returnUrl,
-  onSuccess,
-  onError,
-}: LoginFormProps) {
+export function LoginForm({ returnUrl, onSuccess, onError }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function redirectIfLoggedIn() {
+      const {
+        data: { session },
+      } = await supabaseBrowser.auth.getSession();
+      if (cancelled) return;
+      setIsCheckingSession(false);
+      if (session) {
+        const target = returnUrl && returnUrl.startsWith("/") ? returnUrl : "/";
+        window.location.href = target;
+      }
+    }
+
+    redirectIfLoggedIn();
+    return () => {
+      cancelled = true;
+    };
+  }, [returnUrl]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -29,29 +50,55 @@ export function LoginForm({
 
       if (!result.success) {
         const errors: Record<string, string> = {};
-        result.error.flatten().fieldErrors &&
-          Object.entries(result.error.flatten().fieldErrors).forEach(
-            ([field, messages]) => {
-              const msg = Array.isArray(messages) ? messages[0] : messages;
-              if (msg) errors[field] = msg;
-            }
-          );
+        const fieldErrors = result.error.flatten().fieldErrors;
+        if (fieldErrors) {
+          Object.entries(fieldErrors).forEach(([field, messages]) => {
+            const msg = Array.isArray(messages) ? messages[0] : messages;
+            if (msg) errors[field] = msg;
+          });
+        }
         setFieldErrors(errors);
-        onError?.(errors);
+        if (onError) onError(errors);
         return;
       }
 
       setIsSubmitting(true);
       try {
-        onSuccess?.(result.data);
+        const { error } = await supabaseBrowser.auth.signInWithPassword({
+          email: result.data.email,
+          password: result.data.password,
+        });
+
+        if (error) {
+          toast.error(mapAuthErrorToMessage(error));
+          if (onError) onError({ _form: mapAuthErrorToMessage(error) });
+          return;
+        }
+
+        if (onSuccess) onSuccess(result.data);
+        const target = returnUrl && returnUrl.startsWith("/") ? returnUrl : "/";
+        window.location.href = target;
+      } catch (err) {
+        toast.error(
+          mapAuthErrorToMessage(err instanceof Error ? err : { message: "" }),
+        );
+        if (onError) onError({ _form: "Wystąpił błąd. Spróbuj ponownie." });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [email, password, onSuccess, onError]
+    [email, password, returnUrl, onSuccess, onError],
   );
 
   const hasError = (field: string) => Boolean(fieldErrors[field]);
+
+  if (isCheckingSession) {
+    return (
+      <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+        Sprawdzanie sesji…
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>

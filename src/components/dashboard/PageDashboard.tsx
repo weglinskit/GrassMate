@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getAccessToken } from "@/lib/auth.browser";
 import { DashboardLoader } from "./DashboardLoader";
 import { ProfileCreateForm } from "./ProfileCreateForm";
 import { TreatmentsList } from "./TreatmentsList";
@@ -8,7 +9,10 @@ import { CompleteTreatmentDrawer } from "./CompleteTreatmentDrawer";
 import type { LawnProfile, Treatment, TreatmentWithEmbedded } from "@/types";
 
 async function fetchActiveProfile(): Promise<LawnProfile | null> {
-  const res = await fetch("/api/lawn-profiles/active");
+  const token = await getAccessToken();
+  const res = await fetch("/api/lawn-profiles/active", {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw { status: res.status, ...err };
@@ -18,8 +22,9 @@ async function fetchActiveProfile(): Promise<LawnProfile | null> {
 }
 
 async function fetchTreatments(
-  lawnProfileId: string
+  lawnProfileId: string,
 ): Promise<Treatment[] | TreatmentWithEmbedded[]> {
+  const token = await getAccessToken();
   const params = new URLSearchParams({
     status: "aktywny",
     page: "1",
@@ -27,7 +32,8 @@ async function fetchTreatments(
     embed: "template",
   });
   const res = await fetch(
-    `/api/lawn-profiles/${lawnProfileId}/treatments?${params}`
+    `/api/lawn-profiles/${lawnProfileId}/treatments?${params}`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
   );
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -44,7 +50,9 @@ function showErrorToast(status: number, message?: string): void {
         description: "Zaloguj się ponownie.",
       });
       if (typeof window !== "undefined") {
-        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        const returnUrl = encodeURIComponent(
+          window.location.pathname + window.location.search,
+        );
         window.location.href = `/login?returnUrl=${returnUrl}`;
       }
       return;
@@ -74,8 +82,9 @@ function showErrorToast(status: number, message?: string): void {
 export function PageDashboard() {
   const queryClient = useQueryClient();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedTreatment, setSelectedTreatment] =
-    useState<Treatment | null>(null);
+  const [selectedTreatment, setSelectedTreatment] = useState<Treatment | null>(
+    null,
+  );
   const profileErrorShown = useRef(false);
   const treatmentsErrorShown = useRef(false);
 
@@ -122,7 +131,7 @@ export function PageDashboard() {
       queryClient.setQueryData(["lawn-profiles", "active"], created);
       toast.success("Profil utworzony");
     },
-    [queryClient]
+    [queryClient],
   );
 
   const handleMarkComplete = useCallback((treatment: Treatment) => {

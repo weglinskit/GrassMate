@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { DashboardLoader } from "@/components/dashboard/DashboardLoader";
+import { getAccessToken } from "@/lib/auth.browser";
 import { EmptyProfileState } from "./EmptyProfileState";
 import { ErrorState } from "./ErrorState";
 import { ProfileEditForm } from "./ProfileEditForm";
@@ -11,7 +12,10 @@ import type { LawnProfile } from "@/types";
 const PATCH_AVAILABLE = true;
 
 async function fetchActiveProfile(): Promise<LawnProfile | null> {
-  const res = await fetch("/api/lawn-profiles/active");
+  const token = await getAccessToken();
+  const res = await fetch("/api/lawn-profiles/active", {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw { status: res.status, ...err };
@@ -28,7 +32,7 @@ function showErrorToast(status: number, message?: string): void {
       });
       if (typeof window !== "undefined") {
         const returnUrl = encodeURIComponent(
-          window.location.pathname + window.location.search
+          window.location.pathname + window.location.search,
         );
         window.location.href = `/login?returnUrl=${returnUrl}`;
       }
@@ -84,7 +88,7 @@ export function PageProfil() {
       queryClient.setQueryData(["lawn-profiles", "active"], updated);
       toast.success("Profil zaktualizowany");
     },
-    [queryClient]
+    [queryClient],
   );
 
   if (activeQuery.isPending || activeQuery.isLoading) {

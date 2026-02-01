@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getAccessToken } from "@/lib/auth.browser";
 import { updateLawnProfileSchema } from "@/lib/schemas/lawn-profiles.schema";
 import type { LawnProfile } from "@/types";
 import type { ApiErrorResponse, ValidationErrorDetail } from "@/types";
@@ -45,7 +46,7 @@ export function ProfileEditForm({
     "niskie" | "średnie" | "wysokie"
   >(profile.nasłonecznienie);
   const [rodzajPowierzchni, setRodzajPowierzchni] = useState(
-    profile.rodzaj_powierzchni ?? ""
+    profile.rodzaj_powierzchni ?? "",
   );
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -83,7 +84,9 @@ export function ProfileEditForm({
         wielkość_m2: wielkość ?? undefined,
         nasłonecznienie,
         rodzaj_powierzchni:
-          rodzajPowierzchni.trim() === "" ? undefined : rodzajPowierzchni.trim(),
+          rodzajPowierzchni.trim() === ""
+            ? undefined
+            : rodzajPowierzchni.trim(),
       };
 
       Object.keys(payload).forEach((k) => {
@@ -101,7 +104,10 @@ export function ProfileEditForm({
         });
         setFieldErrors(errors);
         onError?.(
-          Object.entries(errors).map(([field, message]) => ({ field, message }))
+          Object.entries(errors).map(([field, message]) => ({
+            field,
+            message,
+          })),
         );
         return;
       }
@@ -109,13 +115,19 @@ export function ProfileEditForm({
       setIsSubmitting(true);
 
       try {
+        const token = await getAccessToken();
         const res = await fetch(`/api/lawn-profiles/${profile.id}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify(result.data),
         });
 
-        const json = (await res.json().catch(() => ({}))) as ApiErrorResponse & {
+        const json = (await res
+          .json()
+          .catch(() => ({}))) as ApiErrorResponse & {
           data?: LawnProfile;
         };
 
@@ -125,16 +137,20 @@ export function ProfileEditForm({
             (json.details as ValidationErrorDetail[]).forEach(
               ({ field, message }) => {
                 errors[field] = message;
-              }
+              },
             );
             setFieldErrors(errors);
             onError?.(json.details);
           } else {
             setFieldErrors({
               _form:
-                json.error ?? json.message ?? "Wystąpił błąd podczas zapisywania profilu",
+                json.error ??
+                json.message ??
+                "Wystąpił błąd podczas zapisywania profilu",
             });
-            onError?.([{ field: "_form", message: json.error ?? json.message }]);
+            onError?.([
+              { field: "_form", message: json.error ?? json.message },
+            ]);
           }
           return;
         }
@@ -163,7 +179,7 @@ export function ProfileEditForm({
       rodzajPowierzchni,
       onSuccess,
       onError,
-    ]
+    ],
   );
 
   const hasError = (field: string) => Boolean(fieldErrors[field]);
@@ -211,7 +227,9 @@ export function ProfileEditForm({
             onChange={(e) => setLatitude(e.target.value)}
             placeholder="-90 do 90"
             aria-invalid={hasError("latitude")}
-            aria-describedby={hasError("latitude") ? "latitude-error" : undefined}
+            aria-describedby={
+              hasError("latitude") ? "latitude-error" : undefined
+            }
             readOnly={!patchAvailable}
           />
           {fieldErrors.latitude && (

@@ -1,11 +1,10 @@
 /**
  * Endpoint API: PATCH /api/lawn-profiles/:lawnProfileId
  * Aktualizuje profil trawnika (częściowa aktualizacja).
- *
- * Tymczasowe obejście (bez JWT): używamy DEV_USER_ID.
- * Po wdrożeniu auth: pobierać userId z JWT (supabase.auth.getUser(jwt)).
+ * Wymagana autentykacja: Authorization: Bearer <JWT>. Brak/wygasły token → 401.
  */
 
+import { getUserIdFromRequest } from "../../../../lib/auth.server";
 import {
   updateLawnProfile,
   UniqueActiveProfileError,
@@ -17,8 +16,6 @@ import type { LawnProfile } from "../../../../types";
 import { z } from "zod";
 
 export const prerender = false;
-
-const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
@@ -43,14 +40,24 @@ export async function PATCH({
     });
   }
 
+  const userId = await getUserIdFromRequest(request, supabase);
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: JSON_HEADERS,
+    });
+  }
+
   const pathResult = lawnProfileIdSchema.safeParse(params);
   if (!pathResult.success) {
     return new Response(
       JSON.stringify({
         error: "Validation error",
-        details: [{ field: "id", message: "Nieprawidłowy identyfikator profilu" }],
+        details: [
+          { field: "id", message: "Nieprawidłowy identyfikator profilu" },
+        ],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
 
@@ -65,7 +72,7 @@ export async function PATCH({
         error: "Validation error",
         details: [{ field: "_form", message: "Nieprawidłowy JSON w body" }],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
 
@@ -73,24 +80,26 @@ export async function PATCH({
   if (!parsed.success) {
     const details = parsed.error.flatten().fieldErrors;
     const detailList = Object.entries(details).flatMap(([field, messages]) =>
-      (messages ?? []).map((msg) => ({ field, message: msg }))
+      (messages ?? []).map((msg) => ({ field, message: msg })),
     );
     return new Response(
       JSON.stringify({
         error: "Validation error",
         details:
-          detailList.length > 0 ? detailList : [{ message: parsed.error.message }],
+          detailList.length > 0
+            ? detailList
+            : [{ message: parsed.error.message }],
       }),
-      { status: 400, headers: JSON_HEADERS }
+      { status: 400, headers: JSON_HEADERS },
     );
   }
 
   try {
     const lawnProfile: LawnProfile = await updateLawnProfile(
       supabase,
-      DEV_USER_ID,
+      userId,
       lawnProfileId,
-      parsed.data
+      parsed.data,
     );
     return new Response(JSON.stringify({ data: lawnProfile }), {
       status: 200,
@@ -98,10 +107,10 @@ export async function PATCH({
     });
   } catch (e) {
     if (e instanceof UniqueActiveProfileError) {
-      return new Response(
-        JSON.stringify({ error: e.message }),
-        { status: 409, headers: JSON_HEADERS }
-      );
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 409,
+        headers: JSON_HEADERS,
+      });
     }
 
     if (e instanceof LawnProfileNotFoundError) {
@@ -118,9 +127,9 @@ export async function PATCH({
     }
 
     console.error("PATCH /api/lawn-profiles/:id error:", e);
-    return new Response(
-      JSON.stringify({ error: "Internal Server Error" }),
-      { status: 500, headers: JSON_HEADERS }
-    );
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+      status: 500,
+      headers: JSON_HEADERS,
+    });
   }
 }

@@ -1,6 +1,11 @@
 import { defineMiddleware } from "astro:middleware";
+import { createServerClient } from "@supabase/ssr";
+import { parse } from "cookie";
 
-import { supabaseClient } from "../db/supabase.client";
+import type { Database } from "../db/database.types";
+
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
 
 /** Ścieżki wymagające autentykacji (exact match lub prefix). */
 const PROTECTED_PATHS = ["/", "/profil"];
@@ -33,7 +38,36 @@ function shouldSkipGuard(pathname: string): boolean {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  context.locals.supabase = supabaseClient;
+  const cookieHeader = context.request.headers.get("Cookie") ?? "";
+  const cookies = parse(cookieHeader);
+
+  const supabase = createServerClient<Database>(
+    supabaseUrl,
+    supabaseAnonKey,
+    {
+      cookies: {
+        getAll() {
+          return Object.entries(cookies).map(([name, value]) => ({
+            name,
+            value: value ?? "",
+          }));
+        },
+        setAll(cookiesToSet) {
+          for (const { name, value, options } of cookiesToSet) {
+            context.cookies.set(name, value ?? "", {
+              path: options?.path ?? "/",
+              maxAge: options?.maxAge,
+              secure: options?.secure,
+              httpOnly: options?.httpOnly ?? true,
+              sameSite: (options?.sameSite as "lax" | "strict" | "none") ?? "lax",
+            });
+          }
+        },
+      },
+    }
+  );
+
+  context.locals.supabase = supabase;
 
   const url = new URL(context.request.url);
   const pathname = url.pathname;
@@ -46,9 +80,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     import.meta.env.PUBLIC_AUTH_GUARD_ENABLED === "true";
 
   if (authGuardEnabled && isProtectedPath(pathname)) {
-    // TODO: Weryfikacja JWT/sesji z cookies. Po wdrożeniu Supabase Auth
-    // użyj createServerClient z @supabase/ssr i context.request do odczytu sesji.
-    const hasValidSession = false; // placeholder – implementuj przed włączeniem guarda
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const hasValidSession = Boolean(session);
 
     if (!hasValidSession) {
       const returnUrl = encodeURIComponent(pathname + url.search);
