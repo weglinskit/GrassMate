@@ -56,8 +56,14 @@ export class DashboardPage extends BasePage {
   /** Czeka na sekcję zabiegów: albo pusty stan, albo lista. */
   async waitForTreatmentsSection(): Promise<void> {
     await Promise.race([
-      this.emptyTreatmentsMessage.waitFor({ state: "visible", timeout: 15_000 }),
-      this.treatmentsList.waitFor({ state: "visible", timeout: 15_000 }),
+      this.emptyTreatmentsMessage.waitFor({
+        state: "visible",
+        timeout: 15_000,
+      }),
+      this.treatmentsList.waitFor({
+        state: "visible",
+        timeout: 15_000,
+      }),
     ]);
   }
 }

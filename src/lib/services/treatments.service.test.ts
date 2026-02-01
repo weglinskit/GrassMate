@@ -15,9 +15,7 @@ function createMockSupabase(): SupabaseClient {
     lte: () => chain,
     order: () => chain,
     range: () => Promise.resolve({ data: [], error: null }),
-    then(
-      resolve: (v: { count: number | null; error: null }) => void,
-    ) {
+    then(resolve: (v: { count: number | null; error: null }) => void) {
       return Promise.resolve({ count: 0, error: null }).then(resolve);
     },
     catch: () => chain,
