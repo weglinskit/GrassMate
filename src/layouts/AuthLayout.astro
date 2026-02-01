@@ -1,0 +1,32 @@
+---
+import Layout from "./Layout.astro";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "GrassMate" } = Astro.props;
+---
+
+<Layout title={title}>
+  <header
+    class="border-b border-border bg-background"
+    role="banner"
+    aria-label="Nawigacja auth"
+  >
+    <nav
+      class="mx-auto flex h-14 max-w-5xl items-center justify-between px-4"
+      aria-label="Menu auth"
+    >
+      <a href="/" class="text-sm font-semibold text-foreground">
+        GrassMate
+      </a>
+      <div class="flex items-center gap-4">
+        <slot name="header-actions" />
+      </div>
+    </nav>
+  </header>
+  <main class="mx-auto max-w-5xl px-4 py-8" role="main">
+    <slot />
+  </main>
+</Layout>

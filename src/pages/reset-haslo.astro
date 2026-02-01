@@ -1,0 +1,38 @@
+---
+import AuthLayout from "../layouts/AuthLayout.astro";
+import { ResetPasswordForm } from "../components/auth/ResetPasswordForm";
+---
+
+<AuthLayout title="Ustaw nowe hasło – GrassMate">
+  <div slot="header-actions">
+    <a
+      href="/login"
+      class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+    >
+      Powrót do logowania
+    </a>
+  </div>
+
+  <div class="mx-auto max-w-md">
+    <section
+      class="rounded-xl border bg-card py-6 shadow-sm"
+      aria-labelledby="reset-heading"
+    >
+      <div class="px-6 pb-4">
+        <h1
+          id="reset-heading"
+          class="text-xl font-semibold text-card-foreground"
+        >
+          Ustaw nowe hasło
+        </h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          Wprowadź nowe hasło i potwierdź je. Po zapisaniu zostaniesz
+          przekierowany do logowania.
+        </p>
+      </div>
+      <div class="px-6">
+        <ResetPasswordForm client:load />
+      </div>
+    </section>
+  </div>
+</AuthLayout>

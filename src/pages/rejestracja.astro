@@ -1,0 +1,40 @@
+---
+import AuthLayout from "../layouts/AuthLayout.astro";
+import { RegisterForm } from "../components/auth/RegisterForm";
+---
+
+<AuthLayout title="Rejestracja – GrassMate">
+  <div slot="header-actions">
+    <a
+      href="/login"
+      class="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+    >
+      Masz już konto? Zaloguj się
+    </a>
+  </div>
+
+  <div class="mx-auto max-w-md">
+    <section
+      class="rounded-xl border bg-card py-6 shadow-sm"
+      aria-labelledby="register-heading"
+    >
+      <div class="px-6 pb-4">
+        <h1
+          id="register-heading"
+          class="text-xl font-semibold text-card-foreground"
+        >
+          Rejestracja
+        </h1>
+        <p class="mt-1 text-sm text-muted-foreground">
+          Utwórz konto, aby korzystać z GrassMate.
+        </p>
+      </div>
+      <div class="px-6">
+        <RegisterForm
+          client:load
+          returnUrl={Astro.url.searchParams.get("returnUrl") ?? undefined}
+        />
+      </div>
+    </section>
+  </div>
+</AuthLayout>

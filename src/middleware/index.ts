@@ -6,7 +6,12 @@ import { supabaseClient } from "../db/supabase.client";
 const PROTECTED_PATHS = ["/", "/profil"];
 
 /** Ścieżki publiczne – bez przekierowania. */
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/rejestracja",
+  "/zapomniane-haslo",
+  "/reset-haslo",
+];
 
 /** Ścieżki pomijane przez guard (API, assety Astro). */
 const SKIP_PATHS_PREFIX = ["/api", "/_astro", "/favicon"];
