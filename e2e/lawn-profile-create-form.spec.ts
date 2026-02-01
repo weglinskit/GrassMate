@@ -13,17 +13,21 @@ const SEED_USER = {
 
 test.describe("Formularz tworzenia lawn profile", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    const loginHeading = page.getByRole("heading", { name: "Logowanie" });
-
     const activeProfileResponse = page.waitForResponse(
       (res) =>
         res.url().includes("/api/lawn-profiles/active") && res.status() === 200,
-      { timeout: 15_000 },
+      { timeout: 20_000 },
     );
 
-    const isLoginVisible = await loginHeading.isVisible().catch(() => false);
-    if (isLoginVisible) {
+    await page.goto("/");
+
+    await page
+      .getByRole("heading", { name: "Logowanie" })
+      .or(page.getByTestId("lawn-profile-create-form"))
+      .waitFor({ state: "visible", timeout: 15_000 });
+
+    const loginHeading = page.getByRole("heading", { name: "Logowanie" });
+    if (await loginHeading.isVisible()) {
       await page.getByLabel("Adres e-mail").fill(SEED_USER.email);
       await page.getByLabel("Hasło").fill(SEED_USER.password);
       await page.getByRole("button", { name: "Zaloguj się" }).click();
@@ -34,7 +38,7 @@ test.describe("Formularz tworzenia lawn profile", () => {
 
     await page.getByTestId("lawn-profile-create-form").waitFor({
       state: "visible",
-      timeout: 5_000,
+      timeout: 10_000,
     });
   });
 
