@@ -175,7 +175,7 @@ export function PageDashboard() {
 
   if (!profile) {
     return (
-      <>
+      <div data-testid="lawn-profile-create">
         <ProfileCreateForm
           onSuccess={handleProfileSuccess}
           onError={(details) => {
@@ -185,7 +185,7 @@ export function PageDashboard() {
             }
           }}
         />
-      </>
+      </div>
     );
   }
 

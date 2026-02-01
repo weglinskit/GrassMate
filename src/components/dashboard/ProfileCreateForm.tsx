@@ -151,7 +151,12 @@ export function ProfileCreateForm({
   const hasError = (field: string) => Boolean(fieldErrors[field]);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-6"
+      noValidate
+      data-testid="lawn-profile-create-form"
+    >
       {fieldErrors._form && (
         <div
           className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
@@ -171,6 +176,7 @@ export function ProfileCreateForm({
           placeholder="np. Trawnik przed domem"
           aria-invalid={hasError("nazwa")}
           aria-describedby={hasError("nazwa") ? "nazwa-error" : undefined}
+          data-testid="lawn-profile-create-field-nazwa"
         />
         {fieldErrors.nazwa && (
           <p id="nazwa-error" className="text-sm text-destructive" role="alert">
@@ -195,6 +201,7 @@ export function ProfileCreateForm({
             aria-describedby={
               hasError("latitude") ? "latitude-error" : undefined
             }
+            data-testid="lawn-profile-create-field-latitude"
           />
           {fieldErrors.latitude && (
             <p
@@ -221,6 +228,7 @@ export function ProfileCreateForm({
             aria-describedby={
               hasError("longitude") ? "longitude-error" : undefined
             }
+            data-testid="lawn-profile-create-field-longitude"
           />
           {fieldErrors.longitude && (
             <p
@@ -247,6 +255,7 @@ export function ProfileCreateForm({
           aria-describedby={
             hasError("wielkość_m2") ? "wielkość_m2-error" : undefined
           }
+          data-testid="lawn-profile-create-field-wielkosc-m2"
         />
         {fieldErrors.wielkość_m2 && (
           <p
@@ -274,6 +283,7 @@ export function ProfileCreateForm({
             aria-describedby={
               hasError("nasłonecznienie") ? "nasłonecznienie-error" : undefined
             }
+            data-testid="lawn-profile-create-field-naslonecznienie"
           >
             <SelectValue />
           </SelectTrigger>
@@ -313,6 +323,7 @@ export function ProfileCreateForm({
               ? "rodzaj_powierzchni-error"
               : undefined
           }
+          data-testid="lawn-profile-create-field-rodzaj-powierzchni"
         />
         {fieldErrors.rodzaj_powierzchni && (
           <p
@@ -325,7 +336,11 @@ export function ProfileCreateForm({
         )}
       </div>
 
-      <Button type="submit" disabled={isSubmitting}>
+      <Button
+        type="submit"
+        disabled={isSubmitting}
+        data-testid="lawn-profile-create-submit"
+      >
         {isSubmitting ? "Tworzenie…" : "Utwórz profil"}
       </Button>
     </form>

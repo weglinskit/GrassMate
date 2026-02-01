@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 
+
 /**
  * Konfiguracja E2E – tylko Chromium/Desktop Chrome (zgodnie z .cursor/rules/playwright-e2e-testing.mdc).
  * Uruchom serwer: npm run dev (port 3000) lub npm run preview po buildzie.
